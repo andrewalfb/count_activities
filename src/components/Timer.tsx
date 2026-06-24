@@ -25,7 +25,6 @@ interface Props {
         
         intervalRef.current = window.setInterval(() => {
             setNow(Date.now());
-
         }, 1000);
     }
 

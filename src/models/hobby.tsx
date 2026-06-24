@@ -10,7 +10,7 @@ export class Hobby {
 }
 
 // temporary
-export const hobbies = [
+export let hobbies = [
   new Hobby("English", "All variants"),
   new Hobby("React", 'web using'),
   new Hobby('Armenian', 'All variants'),

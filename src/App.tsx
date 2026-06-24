@@ -6,21 +6,39 @@ import './App.css';
 import Select from './components/Select';
 import Timer from './components/Timer';
 
-import { hobbies } from './models/hobby';
+import { hobbies, Hobby } from './models/hobby';
+import HobbyForm from './components/HobbyForm';
 
 function App() {
-  const [hobby, setHobby] = useState('Make your choice:');
+  const [dataHobbies, setDataHobbies] = useState(hobbies);
+  const [hobby, setHobby] = useState('');
+  const [hobbyDescription, setHobbyDescription] = useState('');
+
+ 
 
   function onStopClick(value: number) {
     console.log('clicked the button stop: ' + value);
+    console.log(hobbies);
   }
+
+
+  function submit(name: string, descripton: string) {
+    console.log(name, descripton);
+    const newHobby = new Hobby(name, descripton);
+    let newHobbies = hobbies.slice();
+    newHobbies.push(newHobby);
+    setDataHobbies(newHobbies);
+  };
 
   return (
     <div className='rowContent'>
-      <Select 
-        names={hobbies.map((hobby) => ( hobby.name))} 
-        onChange={ (value) => {setHobby(value);}}
-      />
+      <div className='columnContent'>
+        <HobbyForm onSubmit={submit} />
+        <Select 
+          names={dataHobbies.map((hobby) => ( hobby.name))} 
+          onChange={ (value) => {setHobby(value);}}
+        />
+      </div>
 
       <Timer onStopClick={onStopClick} />
 
