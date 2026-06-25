@@ -1,12 +1,17 @@
 import { useState, useRef } from "react";
 import Button, { ButtonType }  from "./Button";
 
+import { formatTime } from "../utils/helpers";
+
+
 
 interface Props {
+    id: string
+    name: string
     onStopClick: (value: number) => void
 }
 
- export default function Timer({ onStopClick}: Props) {
+ export default function Timer({ id, name, onStopClick}: Props) {
     const [ startTime, setStartTime ] = useState(0);
     const [ now, setNow ] = useState(0);
     const intervalRef = useRef<number | null>(null);
@@ -48,17 +53,6 @@ interface Props {
     }
   }
 
-    function formatTime(seconds: number): string {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const second = Math.floor(seconds % 60);
-        
-        const mm = String(minutes).padStart(2, '0');
-        const ss = String(second).padStart(2, '0');
-
-        return `${hours}:${mm}:${ss}`;
-    }
-
     let secondsPass = 0;
     if (startTime != null && now != null) {
         secondsPass = (now - startTime) / 1000;
@@ -67,7 +61,7 @@ interface Props {
     return (
         <div className="columnContent">
             <div className='timeDisplay'>{formatTime(secondsPass)}</div>
-            <div className='centerText'><i>Time passed</i></div>
+            <div className='centerText'><i>Time for {name}</i></div>
             <div className='btn-wrap'>
                 <Button title={isWorking ? 'Stop' : 'Start'} onClick={isWorking ? handleStop : handleStart} />
                 <Button title='Reset' type={ButtonType.btnSecond} onClick={handleReset} />

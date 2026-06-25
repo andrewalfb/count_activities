@@ -7,7 +7,12 @@ interface Props {
 
 export default function HobbyTable(props: Props) {
     const rows = props.hobbies.map((hobby) => (
-    <HobbyRow key={hobby.name} name={hobby.name} description={hobby.description} />
+    <HobbyRow 
+      key={hobby.name} 
+      name={hobby.name} 
+      description={hobby.description} 
+      spentTime={hobby.id}
+   />
   ));
 
   return (
@@ -16,6 +21,7 @@ export default function HobbyTable(props: Props) {
         <tr>
           <th>Name</th>
           <th>Description</th>
+          <th>Spent time today</th>
         </tr>
       </thead>
       <tbody>{rows}</tbody>
@@ -23,11 +29,12 @@ export default function HobbyTable(props: Props) {
   );
 };
 
-function HobbyRow({ name, description }: { name: string; description: string }) {
+function HobbyRow({ name, description, spentTime }: { name: string; description: string; spentTime: string }) {
   return (
     <tr>
       <td>{name}</td>
       <td>{description}</td>
+      <td>{spentTime}</td>
     </tr>
   );
 }

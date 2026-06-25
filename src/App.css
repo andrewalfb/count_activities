@@ -64,3 +64,25 @@
   gap: 22px;
   margin-left: clamp(12px, 4vw, 48px);
 }
+
+/* DataTable */
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 18px;
+}
+
+.dataTable__th {
+  text-align: left;
+  padding: 6px 10px;
+  font-weight: 700;
+}
+
+.dataTable__td {
+  padding: 6px 10px;
+  vertical-align: top;
+}
+
+.dataTable__tr:nth-child(even) {
+  background: transparent; /* keep plain like screenshot */
+}

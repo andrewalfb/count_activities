@@ -1,26 +1,34 @@
 import { useState } from "react";
 
 
+type Item = {id: string, name: string}
+
 interface Props {
-    names: string[],
+    items: Item[],
     onChange: (value: string) => void
 }
 
 
-export default function Select({ names, onChange }: Props) {
-    const [selected, setSelected] = useState(names[0])
+export default function Select({ items, onChange }: Props) {
+    const [selected, setSelected] = useState('')
 
 
-    const rows = names.map ((name) => (
-      <option key={name} value={name}>{name}</option>
+    const rows = items.map ((item) => (
+      <option key={item.id} value={item.id}>{item.name}</option>
   ));
   
   return <select 
     className='hobbySelect'
     value={selected}
     onChange={(e) => {
-        setSelected(e.target.value);
-        onChange(e.target.value);
+        const id = e.target.value
+        setSelected(id);
+        onChange(id);
     }}
-  >{rows}</select>
+  >
+   <option value='' disabled>
+    Select...
+   </option>  
+    {rows}
+  </select>
 }
