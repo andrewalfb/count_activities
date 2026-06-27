@@ -39,3 +39,21 @@ export let hobbies = [
   new Hobby('Armenian', 'All variants'),
   new Hobby('Do sport', 'my activities'),
 ];
+
+
+type Persisted = {
+  hobbies: { id: string; name: string; description: string }[];
+  hobbyTimes: { id: string; spentTime: number; timestamp: number }[];
+};
+
+const STORAGE_KEY = "hobbyData:v1";
+
+function loadPersisted(): Persisted {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return { hobbies: [], hobbyTimes: [] };
+  return JSON.parse(raw) as Persisted;
+}
+
+function savePersisted(data: Persisted) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}

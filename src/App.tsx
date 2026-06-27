@@ -1,5 +1,8 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+import axios from 'axios';
+
 
 import './App.css';
 
@@ -12,6 +15,7 @@ import Button, { ButtonType } from './components/Button';
 // import HobbyTable from './components/HobbyTable';
 import DataTable from './components/DataTable';
 import { formatTime, startOfLocalDay, isTodayLocal } from './utils/helpers';
+import { error } from 'console';
 
 enum State {
   starting = 0,
@@ -29,6 +33,22 @@ function App() {
   const [selectedItem, setSelectedItem] =  useState<{id: string; name: string} | null>(null);
 
   const [dataHobbyTimes, setDataHobbyTimes] = useState<HobbyTime[]>([]);
+
+  // test backend connectivities
+  const [data, setData] = useState();
+
+ 
+  useEffect(() => {
+    axios.get('http://localhost:5001/api/products').then(
+     response => {
+      setData(response.data);
+     } 
+    ).catch(error => {
+      console.error(error);
+    })
+  }, [])
+
+    // initDb();
 
   const rows = joinById(dataHobbies, dataHobbyTimes);
 
