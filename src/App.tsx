@@ -9,13 +9,13 @@ import './App.css';
 import Select from './components/Select';
 import Timer from './components/Timer';
 
-import { hobbies, Hobby, HobbyTime } from './models/hobby';
+import { Hobby, HobbyTime } from './models/hobby';
 import HobbyForm from './components/HobbyForm';
 import Button, { ButtonType } from './components/Button';
-// import HobbyTable from './components/HobbyTable';
+
 import DataTable from './components/DataTable';
 import { formatTime, startOfLocalDay, isTodayLocal } from './utils/helpers';
-import { error } from 'console';
+
 
 enum State {
   starting = 0,
@@ -29,31 +29,46 @@ enum State {
 function App() {
   const [state, setState] = useState(State.starting);
   
-  const [dataHobbies, setDataHobbies] = useState(hobbies);
-  const [selectedItem, setSelectedItem] =  useState<{id: string; name: string} | null>(null);
+  const [dataHobbies, setDataHobbies] = useState<Hobby[]>([]);
+  const [selectedItem, setSelectedItem] =  useState<{id: number; name: string} | null>(null);
 
   const [dataHobbyTimes, setDataHobbyTimes] = useState<HobbyTime[]>([]);
 
-  // test backend connectivities
-  const [data, setData] = useState();
 
- 
   useEffect(() => {
-    axios.get('http://localhost:5001/api/products').then(
+    axios.get('http://localhost:5001/api/hobbies').then(
      response => {
-      setData(response.data);
+      const hobbies = response.data.map(
+        (h: { id: number; name: string; description: string }) => { 
+          return new Hobby(h.id, h.name, h.description)
+        }
+      );
+      setDataHobbies(hobbies);
      } 
     ).catch(error => {
       console.error(error);
     })
   }, [])
 
-    // initDb();
+  useEffect(() => {
+    axios.get('http://localhost:5001/api/hobbies').then(
+      response => {
+        const hobbyTimes = response.data.map(
+          (h: { id: number; spentTime: number, timestamp: number}) => {
+            return new HobbyTime(h.id, h.spentTime, h.timestamp)
+          }
+        );
+        setDataHobbyTimes(hobbyTimes);
+      }
+    ).catch(error => {
+      console.error(error);
+    })
+  })
 
   const rows = joinById(dataHobbies, dataHobbyTimes);
 
   type JoinedRow = {
-    id: string;
+    id: number;
     name: string;
     description: string;
     spentTime: number;
@@ -61,7 +76,7 @@ function App() {
 
   function joinById(hobbies: Hobby[], times: HobbyTime[]): JoinedRow[] {
     const start = startOfLocalDay();
-    const spentById = new Map<string, number>();
+    const spentById = new Map<number, number>();
 
   for (const t of times) {
     if (t.timestamp < start) continue;
@@ -77,7 +92,7 @@ function App() {
   }
 
 
-function lookupHobbies(id: string): Hobby | undefined {
+function lookupHobbies(id: number): Hobby | undefined {
   const res = dataHobbies.find(item => {
     return item.id === id
   })
@@ -89,7 +104,7 @@ function lookupHobbies(id: string): Hobby | undefined {
     console.log(`spent time to ${selectedItem?.name} = ` + value);
     setState(State.counted);
     if (!selectedItem) return;
-    const newHobbyTime = new HobbyTime(selectedItem.id, value);
+    const newHobbyTime = new HobbyTime(selectedItem.id, value, Date.now());
     let newHobbyTimes = dataHobbyTimes.slice();
     newHobbyTimes.push(newHobbyTime);
     setDataHobbyTimes(newHobbyTimes);
@@ -97,14 +112,14 @@ function lookupHobbies(id: string): Hobby | undefined {
 
 
   function handleSubmitForm(name: string, descripton: string) {
-    const newHobby = new Hobby(name, descripton);
+    const newHobby = new Hobby(100, name, descripton);
     let newHobbies = dataHobbies.slice();
     newHobbies.push(newHobby);
     setDataHobbies(newHobbies);
     setState(State.starting);
   };
 
-  function handleSelect(value: string) {
+  function handleSelect(value: number) {
     const prop = lookupHobbies(value);
     if (!prop) return;
     setSelectedItem({id: value, name: prop.name});

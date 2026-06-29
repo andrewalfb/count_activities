@@ -1,16 +1,16 @@
 import { useState } from "react";
 
 
-type Item = {id: string, name: string}
+type Item = {id: number, name: string}
 
 interface Props {
     items: Item[],
-    onChange: (value: string) => void
+    onChange: (value: number) => void
 }
 
 
 export default function Select({ items, onChange }: Props) {
-    const [selected, setSelected] = useState('')
+    const [selected, setSelected] = useState(0)
 
 
     const rows = items.map ((item) => (
@@ -21,12 +21,12 @@ export default function Select({ items, onChange }: Props) {
     className='hobbySelect'
     value={selected}
     onChange={(e) => {
-        const id = e.target.value
+        const id = Number(e.target.value)
         setSelected(id);
         onChange(id);
     }}
   >
-   <option value='' disabled>
+   <option value='' defaultValue=''>
     Select...
    </option>  
     {rows}

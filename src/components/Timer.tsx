@@ -6,7 +6,7 @@ import { formatTime } from "../utils/helpers";
 
 
 interface Props {
-    id: string
+    id: number
     name: string
     onStopClick: (value: number) => void
 }

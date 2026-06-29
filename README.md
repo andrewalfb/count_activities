@@ -57,3 +57,11 @@ cd backend
 npm init -y
 npm i express nodemon
 npm install express cors --save
+
+## Using node.js sqlite built-in:  https://nodejs.org/api/sqlite.html
+made by using article - https://jangwook.net/en/blog/en/node-sqlite-builtin-practical-guide-2026/
+
+
+## Dev
+start backend:  cd backend && node index.js
+start frontend: npm start
