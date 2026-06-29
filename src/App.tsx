@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 
 import axios from 'axios';
 
-
 import './App.css';
+import { apiConfig } from './config/api'
 
 import Select from './components/Select';
 import Timer from './components/Timer';
@@ -36,7 +36,7 @@ function App() {
 
 
   useEffect(() => {
-    axios.get('http://localhost:5001/api/hobbies').then(
+    axios.get(apiConfig.endpoints.hobby.list()).then(
      response => {
       const hobbies = response.data.map(
         (h: { id: number; name: string; description: string }) => { 
@@ -51,7 +51,7 @@ function App() {
   }, [])
 
   useEffect(() => {
-    axios.get('http://localhost:5001/api/hobbies').then(
+    axios.get(apiConfig.endpoints.hobby.times()).then(
       response => {
         const hobbyTimes = response.data.map(
           (h: { id: number; spentTime: number, timestamp: number}) => {
@@ -108,6 +108,16 @@ function lookupHobbies(id: number): Hobby | undefined {
     let newHobbyTimes = dataHobbyTimes.slice();
     newHobbyTimes.push(newHobbyTime);
     setDataHobbyTimes(newHobbyTimes);
+  
+    const json = {
+      hobby_id: newHobbyTime.id,
+      spent_time: newHobbyTime.spentTime,
+      timestamp: newHobbyTime.timestamp
+    };
+    axios.post(apiConfig.endpoints.hobby.addTimes(), json)
+    .then((response) => {
+      console.log(`responce: ${response}`)
+    });
   }
 
 
