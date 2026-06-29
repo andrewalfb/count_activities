@@ -54,8 +54,8 @@ function App() {
     axios.get(apiConfig.endpoints.hobby.times()).then(
       response => {
         const hobbyTimes = response.data.map(
-          (h: { id: number; spentTime: number, timestamp: number}) => {
-            return new HobbyTime(h.id, h.spentTime, h.timestamp)
+          (h: { id: number; hobbyId: number, spentTime: number, timestamp: number}) => {
+            return new HobbyTime(h.hobbyId, h.spentTime, h.timestamp)
           }
         );
         setDataHobbyTimes(hobbyTimes);
