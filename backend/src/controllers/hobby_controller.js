@@ -17,14 +17,25 @@ const hobbyTimes = function (req, res) {
 
 const addHobbyTime = function (req, res) {
     const jsonData = req.body;
+    
+    setHobbyTime(jsonData);
     res.json({
         message: 'json data received',
         data: jsonData
     })
-    setHobbyTime(jsonData);
 };
 
-// private helps
+const addHobby = function (req, res) {
+    const jsonData = req.body;
+
+    const id = setHobby(jsonData);
+    res.json({
+        message: 'ok',
+        id: id
+    });
+}
+
+// private helpers
 
 function getHobbiesList() {
   const rows = db.prepare('SELECT * FROM hobbies ORDER BY name DESC').all();
@@ -53,7 +64,18 @@ function setHobbyTime(jsonData) {
   });
 }
 
+function setHobby(jsonData) {
+    const { name, description } = jsonData;
+    console.log(`setHobby function input: ${name} and ${description}`);
+    const insert = db.prepare(
+        'INSERT INTO hobbies (name, description) VALUES (:name, :description)'
+    );
+    const result = insert.run({name: name, description: description});
+    console.log(`result db is: ${result.lastInsertRowid}`);
+
+    return result.lastInsertRowid;
+}
 
 
 
-module.exports = { hobbyList, hobbyTimes, addHobbyTime };
+module.exports = { hobbyList, hobbyTimes, addHobbyTime, addHobby };

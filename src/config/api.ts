@@ -4,7 +4,8 @@ export type ApiConfig = {
     hobby: {
         list: () => string;
         times: () => string;
-        addTimes:() => string;
+        addTimes: () => string;
+        addHobby: () => string;
     }
  } 
 };
@@ -22,7 +23,8 @@ export const apiConfig: ApiConfig = {
         hobby: {
             list: () => `${baseUrl}/`,
             times: () => `${baseUrl}/times`,
-            addTimes: () => `${baseUrl}/add_time`
+            addTimes: () => `${baseUrl}/add_time`,
+            addHobby: () => `${baseUrl}/add`
         }
     }
  };

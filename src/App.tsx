@@ -15,6 +15,7 @@ import Button, { ButtonType } from './components/Button';
 
 import DataTable from './components/DataTable';
 import { formatTime, startOfLocalDay, isTodayLocal } from './utils/helpers';
+import { error } from 'console';
 
 
 enum State {
@@ -114,19 +115,33 @@ function lookupHobbies(id: number): Hobby | undefined {
       spent_time: newHobbyTime.spentTime,
       timestamp: newHobbyTime.timestamp
     };
+
     axios.post(apiConfig.endpoints.hobby.addTimes(), json)
     .then((response) => {
       console.log(`responce: ${response}`)
+    }).catch(error => {
+      console.error(`error add time: ${error}`);
     });
   }
 
 
-  function handleSubmitForm(name: string, descripton: string) {
-    const newHobby = new Hobby(100, name, descripton);
+  function handleSubmitForm(name: string, description: string) {
+
+    const json = {
+      name: name,
+      description: description
+    };
+    axios.post(apiConfig.endpoints.hobby.addHobby(), json)
+    .then((response) => {
+      console.log(`response: ${response.data}`)
+    const newHobby = new Hobby(response.data.id, name, description);
     let newHobbies = dataHobbies.slice();
     newHobbies.push(newHobby);
     setDataHobbies(newHobbies);
     setState(State.starting);
+    }).catch(error => {
+      console.error(`error add hobby: ${error}`);
+    });
   };
 
   function handleSelect(value: number) {
