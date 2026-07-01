@@ -23,7 +23,7 @@ enum State {
   adding,
   selected,
   counted,
-  finishing
+  closeCount
 }
 
 
@@ -124,6 +124,13 @@ function lookupHobbies(id: number): Hobby | undefined {
     });
   }
 
+  function onResetClick() {
+    setState(State.selected);
+  }
+
+  function onCloseClick() {
+    setState(State.starting);
+  } 
 
   function handleSubmitForm(name: string, description: string) {
 
@@ -176,7 +183,13 @@ function lookupHobbies(id: number): Hobby | undefined {
       )}
       
       { state === State.selected && selectedItem && (
-        <Timer id={selectedItem.id} name={selectedItem.name} onStopClick={onStopClick} />
+        <Timer 
+          id={selectedItem.id} 
+          name={selectedItem.name} 
+          onStopClick={onStopClick} 
+          onResetClick={onResetClick}
+          onCloseClick={onCloseClick}
+        />
       )}
 
       { state === State.counted && (

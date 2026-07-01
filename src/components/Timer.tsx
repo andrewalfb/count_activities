@@ -6,12 +6,14 @@ import { formatTime } from "../utils/helpers";
 
 
 interface Props {
-    id: number
-    name: string
-    onStopClick: (value: number) => void
+    id: number,
+    name: string,
+    onStopClick: (value: number) => void,
+    onResetClick: () => void,
+    onCloseClick: () => void
 }
 
- export default function Timer({ id, name, onStopClick}: Props) {
+ export default function Timer({ id, name, onStopClick, onResetClick, onCloseClick }: Props) {
     const [ startTime, setStartTime ] = useState(0);
     const [ now, setNow ] = useState(0);
     const intervalRef = useRef<number | null>(null);
@@ -47,10 +49,16 @@ interface Props {
      if (intervalRef.current !== null) {
         const currentTime = Date.now();
         setStartTime(currentTime);
-        setNow(currentTime);
+        setNow(currentTime); 
         clearInterval(intervalRef.current);
-            
+        
+        onResetClick();
     }
+  }
+
+  function handleClose() {
+    setIsWorking(false);
+    onCloseClick();
   }
 
     let secondsPass = 0;
@@ -65,6 +73,7 @@ interface Props {
             <div className='btn-wrap'>
                 <Button title={isWorking ? 'Stop' : 'Start'} onClick={isWorking ? handleStop : handleStart} />
                 <Button title='Reset' type={ButtonType.btnSecond} onClick={handleReset} />
+                <Button title='Close' type={ButtonType.btnSecond} onClick={handleClose} />
             </div>
             
         </div>
