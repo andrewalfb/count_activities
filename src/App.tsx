@@ -64,7 +64,7 @@ function App() {
     ).catch(error => {
       console.error(error);
     })
-  })
+  }, [])
 
   const rows = joinById(dataHobbies, dataHobbyTimes);
 

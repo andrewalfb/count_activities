@@ -35,6 +35,13 @@ const addHobby = function (req, res) {
     });
 }
 
+const login = function (req, res) {
+    checkLogin(req.body);
+    res.json({
+        message: 'ok'
+    })
+}
+
 // private helpers
 
 function getHobbiesList() {
@@ -76,6 +83,11 @@ function setHobby(jsonData) {
     return result.lastInsertRowid;
 }
 
+function checkLogin(jsonData) {
+    const { name, password } = jsonData;
+    console.log(`login: ${name}`);
+
+}
 
 
-module.exports = { hobbyList, hobbyTimes, addHobbyTime, addHobby };
+module.exports = { hobbyList, hobbyTimes, addHobbyTime, addHobby, login };
