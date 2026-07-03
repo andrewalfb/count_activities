@@ -16,7 +16,7 @@ function getEnv(name: string): string | undefined {
 }
 
 const baseUrl = getEnv('HOBBIES_BASE_URL') ??
-    "http://localhost:5001/api/v1/hobby";
+    "http://192.168.10.101:5001/api/v1/hobby";
 
 export const apiConfig: ApiConfig = {
     endpoints: {
