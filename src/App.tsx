@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 
 import axios from 'axios';
 
+
 import './App.css';
 import { apiConfig } from './config/api'
 
@@ -15,7 +16,6 @@ import Button, { ButtonType } from './components/Button';
 
 import DataTable from './components/DataTable';
 import { formatTime, startOfLocalDay, isTodayLocal } from './utils/helpers';
-import { error } from 'console';
 
 
 enum State {
@@ -26,6 +26,9 @@ enum State {
   closeCount
 }
 
+const api = axios.create({
+  withCredentials: true
+});
 
 function App() {
   const [state, setState] = useState(State.starting);
@@ -35,9 +38,8 @@ function App() {
 
   const [dataHobbyTimes, setDataHobbyTimes] = useState<HobbyTime[]>([]);
 
-
   useEffect(() => {
-    axios.get(apiConfig.endpoints.hobby.list()).then(
+    api.get(apiConfig.endpoints.hobby.list()).then(
      response => {
       const hobbies = response.data.map(
         (h: { id: number; name: string; description: string }) => { 
@@ -52,7 +54,7 @@ function App() {
   }, [])
 
   useEffect(() => {
-    axios.get(apiConfig.endpoints.hobby.times()).then(
+    api.get(apiConfig.endpoints.hobby.times()).then(
       response => {
         const hobbyTimes = response.data.map(
           (h: { id: number; hobbyId: number, spentTime: number, timestamp: number}) => {
@@ -116,7 +118,7 @@ function lookupHobbies(id: number): Hobby | undefined {
       timestamp: newHobbyTime.timestamp
     };
 
-    axios.post(apiConfig.endpoints.hobby.addTimes(), json)
+    api.post(apiConfig.endpoints.hobby.addTimes(), json)
     .then((response) => {
       console.log(`responce: ${response}`)
     }).catch(error => {
@@ -138,7 +140,7 @@ function lookupHobbies(id: number): Hobby | undefined {
       name: name,
       description: description
     };
-    axios.post(apiConfig.endpoints.hobby.addHobby(), json)
+    api.post(apiConfig.endpoints.hobby.addHobby(), json)
     .then((response) => {
       console.log(`response: ${response.data}`)
     const newHobby = new Hobby(response.data.id, name, description);
