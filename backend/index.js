@@ -6,36 +6,11 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 const hobbyRouter = require('./src/routers/hobby_router.js');
+const authRouter = require('./src/routers/auth.js');
 
 app.use(express.json());
 app.use(cookieParser());
 
-
-app.use((req, res, next) => {
-  console.log(
-    `${req.method} ${req.originalUrl} cookie:`,
-    req.cookies.anon_id
-  );
-    if (req.method === "OPTIONS") {
-    return next();
-  }
-  if (!req.cookies.anon_id) {
-    const anonId = Math.random().toString(36).slice(2);
-
-    console.log(
-      `Setting cookie ${anonId} for ${req.method} ${req.originalUrl}`
-    );
-
-    res.cookie("anon_id", anonId, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: false,
-      path: "/",
-    });
-  }
-
-  next();
-});
 
 app.use(cors({
   origin: [ 
@@ -56,9 +31,29 @@ app.use(function simpleLogger(req, res, next) {
     console.log(`${req.method} ${req.originalUrl} -> ${res.statusCode} (${ms}ms) ip: ${req.ip}`);
   });
   console.log(`cookie: ${req.cookies.anon_id}`);
+      // temporary log db in memory
+    const db = getDb();
+    const hobbies = db.prepare(
+      'SELECT * FROM hobbies'
+    ).all();
+   const users = db.prepare(
+      'SELECT * FROM users'
+    ).all();
+
+    const times = db.prepare(
+      'SELECT * FROM hobby_time'
+    ).all();
+
+    console.log(users);
+    console.log(hobbies);
+    console.log(times);
+    //
+  
+  
   next();
 });
 
+app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/hobby', hobbyRouter);
 
 app.listen(5001, () => {

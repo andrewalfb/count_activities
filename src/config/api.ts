@@ -6,6 +6,9 @@ export type ApiConfig = {
         times: () => string;
         addTimes: () => string;
         addHobby: () => string;
+    },
+    auth: {
+        init: () => string;
     }
  } 
 };
@@ -16,15 +19,18 @@ function getEnv(name: string): string | undefined {
 }
 
 const baseUrl = getEnv('HOBBIES_BASE_URL') ??
-    "http://localhost:5001/api/v1/hobby";
+    "http://localhost:5001/api/v1";
 
 export const apiConfig: ApiConfig = {
     endpoints: {
         hobby: {
-            list: () => `${baseUrl}/`,
-            times: () => `${baseUrl}/times`,
-            addTimes: () => `${baseUrl}/add_time`,
-            addHobby: () => `${baseUrl}/add`
+            list: () => `${baseUrl}/hobby/`,
+            times: () => `${baseUrl}/hobby/times`,
+            addTimes: () => `${baseUrl}/hobby/add_time`,
+            addHobby: () => `${baseUrl}/hobby/add`
+        },
+        auth: {
+            init: () => `${baseUrl}/auth/init`
         }
     }
  };
