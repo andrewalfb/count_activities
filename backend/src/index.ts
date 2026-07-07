@@ -1,12 +1,12 @@
-const { initDb, getDb } = require('./src/database.js');
+import { initDb, getDb } from './database';
 
-const express = require('express');
+import express from 'express';
 const app = express();
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
-const hobbyRouter = require('./src/routers/hobby_router.js');
-const authRouter = require('./src/routers/auth.js');
+import { router as hobbyRouter } from './routers/hobby_router';
+import { router as authRouter } from './routers/auth';
 
 app.use(express.json());
 app.use(cookieParser());
