@@ -1,7 +1,8 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import axios from 'axios';
+
 
 import './App.css';
 import { apiConfig } from './config/api'
@@ -15,17 +16,19 @@ import Button, { ButtonType } from './components/Button';
 
 import DataTable from './components/DataTable';
 import { formatTime, startOfLocalDay, isTodayLocal } from './utils/helpers';
-import { error } from 'console';
 
 
 enum State {
   starting = 0,
   adding,
+  showing,
   selected,
-  counted,
   closeCount
 }
 
+const api = axios.create({
+  withCredentials: true
+});
 
 function App() {
   const [state, setState] = useState(State.starting);
@@ -35,63 +38,31 @@ function App() {
 
   const [dataHobbyTimes, setDataHobbyTimes] = useState<HobbyTime[]>([]);
 
+  const initialized = useRef(false);
 
   useEffect(() => {
-    axios.get(apiConfig.endpoints.hobby.list()).then(
-     response => {
-      const hobbies = response.data.map(
-        (h: { id: number; name: string; description: string }) => { 
-          return new Hobby(h.id, h.name, h.description)
-        }
-      );
-      setDataHobbies(hobbies);
-     } 
-    ).catch(error => {
-      console.error(error);
-    })
-  }, [])
 
-  useEffect(() => {
-    axios.get(apiConfig.endpoints.hobby.times()).then(
-      response => {
-        const hobbyTimes = response.data.map(
-          (h: { id: number; hobbyId: number, spentTime: number, timestamp: number}) => {
-            return new HobbyTime(h.hobbyId, h.spentTime, h.timestamp)
-          }
-        );
-        setDataHobbyTimes(hobbyTimes);
-      }
-    ).catch(error => {
-      console.error(error);
-    })
-  })
+  const bootstrap = async () => {
+    if (initialized.current) { return };
+    initialized.current = true;
 
-  const rows = joinById(dataHobbies, dataHobbyTimes);
+    await api.get(apiConfig.endpoints.auth.init());
 
-  type JoinedRow = {
-    id: number;
-    name: string;
-    description: string;
-    spentTime: number;
+    const [hobbyRes, timesRes] = await Promise.all([
+      api.get(apiConfig.endpoints.hobby.list()),
+      api.get(apiConfig.endpoints.hobby.times()),
+    ]);
+
+    const hobbies = hobbyRes.data.map(
+      (h: { id: number; name: string; description: string }) =>
+        new Hobby(h.id, h.name, h.description)
+    );
+
+    setDataHobbies(hobbies);
   };
 
-  function joinById(hobbies: Hobby[], times: HobbyTime[]): JoinedRow[] {
-    const start = startOfLocalDay();
-    const spentById = new Map<number, number>();
-
-  for (const t of times) {
-    if (t.timestamp < start) continue;
-    spentById.set(t.id, (spentById.get(t.id) ?? 0) + t.spentTime);
-  }
-    
-    return hobbies.map(h => ({
-      id: h.id,
-      name: h.name,
-      description: h.description,
-      spentTime: spentById.get(h.id) ?? 0,
-    }));
-  }
-
+  bootstrap().catch(console.error);
+}, []);
 
 function lookupHobbies(id: number): Hobby | undefined {
   const res = dataHobbies.find(item => {
@@ -103,22 +74,26 @@ function lookupHobbies(id: number): Hobby | undefined {
 
   function onStopClick(value: number) {
     console.log(`spent time to ${selectedItem?.name} = ` + value);
-    setState(State.counted);
+    setState(State.showing);
     if (!selectedItem) return;
-    const newHobbyTime = new HobbyTime(selectedItem.id, value, Date.now());
-    let newHobbyTimes = dataHobbyTimes.slice();
-    newHobbyTimes.push(newHobbyTime);
-    setDataHobbyTimes(newHobbyTimes);
   
     const json = {
-      hobby_id: newHobbyTime.id,
-      spent_time: newHobbyTime.spentTime,
-      timestamp: newHobbyTime.timestamp
+      hobby_id: selectedItem.id,
+      spent_time: value,
+      timestamp: Date.now()
     };
 
-    axios.post(apiConfig.endpoints.hobby.addTimes(), json)
+    api.post(apiConfig.endpoints.hobby.addTimes(), json)
     .then((response) => {
       console.log(`responce: ${response}`)
+      api.get(apiConfig.endpoints.hobby.times())
+        .then((response: { data: HobbyTime[] }) => {
+        console.log(response);
+        const newHobbyTimes = response.data.map(item => new HobbyTime(item.name, item.description, item.spentTime, item.timestamp));
+
+        setDataHobbyTimes(newHobbyTimes);
+      });
+
     }).catch(error => {
       console.error(`error add time: ${error}`);
     });
@@ -138,7 +113,7 @@ function lookupHobbies(id: number): Hobby | undefined {
       name: name,
       description: description
     };
-    axios.post(apiConfig.endpoints.hobby.addHobby(), json)
+    api.post(apiConfig.endpoints.hobby.addHobby(), json)
     .then((response) => {
       console.log(`response: ${response.data}`)
     const newHobby = new Hobby(response.data.id, name, description);
@@ -168,14 +143,24 @@ function lookupHobbies(id: number): Hobby | undefined {
           onChange={ (value) => {handleSelect(value) }}
         />
 
-        <label>or add new activity /hobby/:</label>
+        <label>or add new activity:</label>
         <Button 
           title='add' 
           type={ButtonType.btnSecond} 
           onClick={ () => {
             setState(State.adding)}} 
         />
+
+        <label>or see today activities:</label>
+        <Button 
+          title='show' 
+          type={ButtonType.btnSecond} 
+          onClick={ () => {
+            setState(State.showing)}} 
+        />
+
         </div>
+
       )}
 
       { state === State.adding && (
@@ -192,7 +177,7 @@ function lookupHobbies(id: number): Hobby | undefined {
         />
       )}
 
-      { state === State.counted && (
+      { state === State.showing && (
         <div className='columnContent'>
           <Button 
             title='Back'
@@ -202,7 +187,7 @@ function lookupHobbies(id: number): Hobby | undefined {
           <br/>
           {/* <HobbyTable hobbies={dataHobbies} /> */}
           <DataTable 
-            items={rows}
+            items={dataHobbyTimes}
             columns={[
               { header: 'Name', cell: (h) => h.name },
               { header: 'Description', cell: (h) => h.description },

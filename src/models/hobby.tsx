@@ -1,6 +1,3 @@
-
-
-// Model
 export class Hobby {
   id: number
   name: string
@@ -14,12 +11,14 @@ export class Hobby {
 }
 
 export class HobbyTime {
-  id: number
+  name: string
+  description: string
   spentTime: number
   timestamp: number
 
-  constructor(id: number, spentTime: number, timestamp: number) {
-    this.id = id
+  constructor(name: string, description: string, spentTime: number, timestamp: number) {
+    this.name = name
+    this.description = description
     this.spentTime = spentTime
     this.timestamp = timestamp
   }

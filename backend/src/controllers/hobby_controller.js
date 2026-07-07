@@ -1,32 +1,39 @@
-const { getDb } = require('../database.js');
+const { json } = require('stream/consumers');
+const { getDb, getHobbiesList, getSpentTimesToday, setHobby, setHobbyTime } = require('../database.js');
+const { use } = require('react');
 
-const db = getDb();
+// const db = getDb();
 
 
 
 const hobbyList = function (req, res) {
-    const rows = getHobbiesList();
+    const userId = req.cookies.anon_id;
+    const rows = getHobbiesList(userId);
     res.json(rows);
 };
 
 
 const hobbyTimes = function (req, res) {
-    const rows = getHobbyTimeList();
+    const userId = req.cookies.anon_id;
+    const rows = getSpentTimesToday(userId);
     res.json(rows);
 };
 
-const addHobbyTime = function (req, res) {
+const addHobbyTime = function (req, res) {  
     const jsonData = req.body;
-    
     setHobbyTime(jsonData);
-    res.json({
-        message: 'json data received',
-        data: jsonData
-    })
+    
+    res.send('OK');
 };
 
 const addHobby = function (req, res) {
-    const jsonData = req.body;
+    const userId = req.cookies.anon_id;
+    
+    const jsonData = {
+        userId: userId,
+        name: req.body.name,
+        description: req.body.description
+    };
 
     const id = setHobby(jsonData);
     res.json({
@@ -35,47 +42,22 @@ const addHobby = function (req, res) {
     });
 }
 
+const login = function (req, res) {
+    checkLogin(req.body);
+    res.json({
+        message: 'ok'
+    })
+}
+
 // private helpers
 
-function getHobbiesList() {
-  const rows = db.prepare('SELECT * FROM hobbies ORDER BY name DESC').all();
-    
-  return rows
-};
-
-function getHobbyTimeList() {
-  const rows = db.prepare('SELECT * FROM hobby_time').all();
-
-  return rows;
-};
 
 
-function setHobbyTime(jsonData) {
-  const { hobby_id, spent_time, timestamp } = jsonData;
+function checkLogin(jsonData) {
+    const { name, password } = jsonData;
+    console.log(`login: ${name}`);
 
-  const insert = db.prepare(
-    'INSERT INTO hobby_time (hobbyId, spentTime, timestamp) VALUES(:hobbyId, :spentTime, :timestamp)'
-  );
-
-  insert.run({
-    hobbyId: hobby_id,
-    spentTime: spent_time,
-    timestamp
-  });
-}
-
-function setHobby(jsonData) {
-    const { name, description } = jsonData;
-    console.log(`setHobby function input: ${name} and ${description}`);
-    const insert = db.prepare(
-        'INSERT INTO hobbies (name, description) VALUES (:name, :description)'
-    );
-    const result = insert.run({name: name, description: description});
-    console.log(`result db is: ${result.lastInsertRowid}`);
-
-    return result.lastInsertRowid;
 }
 
 
-
-module.exports = { hobbyList, hobbyTimes, addHobbyTime, addHobby };
+module.exports = { hobbyList, hobbyTimes, addHobbyTime, addHobby, login };
