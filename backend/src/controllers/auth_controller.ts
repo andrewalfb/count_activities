@@ -1,6 +1,8 @@
-const { createUser } = require('../database');
+import { createUser } from '../database';
 
-const init = function (req, res) {
+import type { Request, Response  } from 'express';
+
+export const init = function (req: Request, res: Response) {
     console.log(
     `${req.method} ${req.originalUrl} cookie:`,
     req.cookies.anon_id
@@ -26,5 +28,3 @@ const init = function (req, res) {
 
     res.sendStatus(200);
 };
-
-module.exports = { init };

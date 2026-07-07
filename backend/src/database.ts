@@ -1,8 +1,8 @@
-const { DatabaseSync } = require('node:sqlite');
+import { DatabaseSync } from 'node:sqlite';
 
 const db = new DatabaseSync(':memory:');
 
-function initDb() {
+export function initDb() {
   // hobbies db
     db.exec(`
       CREATE TABLE IF NOT EXISTS hobbies (
@@ -33,11 +33,11 @@ function initDb() {
 
 }
 
-function getDb() {
+export function getDb() {
   return db;
 }
 
-function createUser(userId, name) {
+export function createUser(userId: string, name: string) {
   const insert = db.prepare(
     'INSERT INTO users (id, name) VALUES (:id, :name)'
   );
@@ -47,7 +47,7 @@ function createUser(userId, name) {
   createHobbyExamples(userId);
 };
 
-function createHobbyExamples(userId) {
+export function createHobbyExamples(userId: string) {
   const insert = db.prepare(
     'INSERT INTO hobbies (userId, name, description) VALUES (:userId, :name, :description)'
   );
@@ -58,7 +58,7 @@ function createHobbyExamples(userId) {
 };
 
 
-function getHobbiesList(userId) {
+export function getHobbiesList(userId: string) {
   const rows = db.prepare(
     'SELECT id, name, description FROM hobbies WHERE userId = ? ORDER BY name DESC'
   ).all(userId);
@@ -66,8 +66,7 @@ function getHobbiesList(userId) {
   return rows;
 }
 
-function setHobby(jsonData) {
-    const { userId, name, description } = jsonData;
+export function setHobby(userId: string, name: string, description: string) {
     console.log(`setHobby: userId: ${userId} userName: ${name} userDescription: ${description}`);
     
     const insert = db.prepare(
@@ -80,14 +79,13 @@ function setHobby(jsonData) {
 }
 
 
-function getHobbyTimeList(userId) {
+export function getHobbyTimeList(userId: string) {
   const rows = db.prepare('SELECT * FROM hobbies, hobby_time WHERE hobbies.userId = ? AND hobbies.id = hobby_time.hobbyId').all(userId);
 
   return rows;
 };
 
-function setHobbyTime(jsonData) {
-  const { hobby_id, spent_time, timestamp } = jsonData;
+export function setHobbyTime(hobby_id: number, spent_time: number, timestamp: number) {
 
   const insert = db.prepare(
     'INSERT INTO hobby_time (hobbyId, spentTime, timestamp) VALUES(:hobbyId, :spentTime, :timestamp)'
@@ -100,10 +98,10 @@ function setHobbyTime(jsonData) {
   });
 }
 
-function getSpentTimesToday(userId) {
+export function getSpentTimesToday(userId: string) {
   const rows = db.prepare('SELECT SUM(spentTime) as spentTime, hobbies.name as name, hobbies.description as description FROM hobbies, hobby_time WHERE hobbies.userId = ? AND hobbies.id = hobby_time.hobbyId GROUP BY hobbyId').all(userId);
   
   return rows;
 }
 
-module.exports = { initDb, getDb, createUser, getHobbiesList, getSpentTimesToday, setHobby, setHobbyTime };
+// module.exports = { initDb, getDb, createUser, getHobbiesList, getSpentTimesToday, setHobby, setHobbyTime };
