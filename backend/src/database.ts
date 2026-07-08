@@ -1,6 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 
-const db = new DatabaseSync(':memory:');
+// const db = new DatabaseSync(':memory:');
+const db = new DatabaseSync('my.db');
 
 export function initDb() {
   // hobbies db
@@ -19,7 +20,7 @@ export function initDb() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       hobbyId INTEGER NOT NULL,
       spentTime INTEGER NOT NULL,
-      timestamp INTEGER NOT NULL,
+      timestamp INTEGER NOT NULL DEFAULT (CAST(strftime('%s') AS INTEGER)),
       FOREIGN KEY (hobbyId) REFERENCES hobbies(id)
     );
   `);
@@ -85,23 +86,32 @@ export function getHobbyTimeList(userId: string) {
   return rows;
 };
 
-export function setHobbyTime(hobby_id: number, spent_time: number, timestamp: number) {
+export function setHobbyTime(hobby_id: number, spent_time: number) {
 
   const insert = db.prepare(
-    'INSERT INTO hobby_time (hobbyId, spentTime, timestamp) VALUES(:hobbyId, :spentTime, :timestamp)'
+    'INSERT INTO hobby_time (hobbyId, spentTime) VALUES(:hobbyId, :spentTime)'
   );
 
   insert.run({
     hobbyId: hobby_id,
-    spentTime: spent_time,
-    timestamp
+    spentTime: spent_time
   });
 }
 
 export function getSpentTimesToday(userId: string) {
-  const rows = db.prepare('SELECT SUM(spentTime) as spentTime, hobbies.name as name, hobbies.description as description FROM hobbies, hobby_time WHERE hobbies.userId = ? AND hobbies.id = hobby_time.hobbyId GROUP BY hobbyId').all(userId);
-  
+  const rows = db.prepare(`
+    SELECT
+      SUM(ht.spentTime) AS spentTime,
+      h.name AS name,
+      h.description AS description
+    FROM hobbies h
+    JOIN hobby_time ht ON h.id = ht.hobbyId
+    WHERE h.userId = ?
+      AND ht.timestamp >= CAST(strftime('%s','now','start of day') AS INTEGER)
+      AND ht.timestamp <  CAST(strftime('%s','now','start of day','+1 day') AS INTEGER)
+
+    GROUP BY ht.hobbyId
+  `).all(userId);
+
   return rows;
 }
-
-// module.exports = { initDb, getDb, createUser, getHobbiesList, getSpentTimesToday, setHobby, setHobbyTime };

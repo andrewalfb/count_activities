@@ -79,8 +79,7 @@ function lookupHobbies(id: number): Hobby | undefined {
   
     const json = {
       hobby_id: selectedItem.id,
-      spent_time: value,
-      timestamp: Date.now()
+      spent_time: value
     };
 
     api.post(apiConfig.endpoints.hobby.addTimes(), json)

@@ -19,7 +19,7 @@ export const hobbyTimes = function (req: Request, res: Response) {
 };
 
 export const addHobbyTime = function (req: Request, res: Response) {  
-    setHobbyTime(req.body.hobby_id, req.body.spent_time, req.body.timestamp);
+    setHobbyTime(req.body.hobby_id, req.body.spent_time);
     
     res.send('OK');
 };
