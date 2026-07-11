@@ -23,3 +23,13 @@ export class HobbyTime {
     this.timestamp = timestamp
   }
 }
+
+export class HobbyDetailsTime {
+  description: string
+  spentTime: number
+
+  constructor(description: string, spentTime: number) {
+    this.description = description;
+    this.spentTime = spentTime;
+  }
+}

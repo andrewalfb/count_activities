@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import Button, { ButtonType }  from "./Button";
 
 import { formatTime } from "../utils/helpers";
@@ -8,31 +8,50 @@ import { formatTime } from "../utils/helpers";
 interface Props {
     id: number,
     name: string,
+    active: boolean,
     onStopClick: (value: number) => void,
     onResetClick: () => void,
     onCloseClick: () => void
 }
 
- export default function Timer({ id, name, onStopClick, onResetClick, onCloseClick }: Props) {
+ export default function Timer({ id, name, onStopClick, active, onResetClick, onCloseClick }: Props) {
     const [ startTime, setStartTime ] = useState(0);
     const [ now, setNow ] = useState(0);
     const intervalRef = useRef<number | null>(null);
 
-    const [ isWorking, setIsWorking ] = useState(false);
+    const [ isWorking, setIsWorking ] = useState(active);
 
-    function handleStart() {
+    const secondsPass = useMemo(() => {
+        if (!startTime || !now) return 0;
+        return (now - startTime) / 1000;
+    }, [startTime, now]);
+
+    useEffect(() => {
+        if (!isWorking) { 
+            if (intervalRef.current !== null) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            }
+            return;
+        }
         const currentTime = Date.now();
         setStartTime(currentTime);
         setNow(currentTime);
-        setIsWorking(true);
 
-        if (intervalRef.current !== null) {
-            clearInterval(intervalRef.current);
-        }
-        
         intervalRef.current = window.setInterval(() => {
             setNow(Date.now());
         }, 1000);
+
+        return () => {
+            if (intervalRef.current !== null) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            }
+        };
+    }, [isWorking]);
+
+    function handleStart() {
+        setIsWorking(true)
     }
 
     function handleStop() {
@@ -44,26 +63,21 @@ interface Props {
     }
 
 
-  function handleReset() {
-    setIsWorking(false);
-     if (intervalRef.current !== null) {
-        const currentTime = Date.now();
-        setStartTime(currentTime);
-        setNow(currentTime); 
-        clearInterval(intervalRef.current);
-        
-        onResetClick();
+    function handleReset() {
+        setIsWorking(false);
+        if (intervalRef.current !== null) {
+            const currentTime = Date.now();
+            setStartTime(currentTime);
+            setNow(currentTime); 
+            clearInterval(intervalRef.current);
+            
+            onResetClick();
+        }
     }
-  }
 
-  function handleClose() {
-    setIsWorking(false);
-    onCloseClick();
-  }
-
-    let secondsPass = 0;
-    if (startTime != null && now != null) {
-        secondsPass = (now - startTime) / 1000;
+    function handleClose() {
+        setIsWorking(false);
+        onCloseClick();
     }
 
     return (

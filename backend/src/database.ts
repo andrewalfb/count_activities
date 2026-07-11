@@ -20,11 +20,15 @@ export function initDb() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       hobbyId INTEGER NOT NULL,
       spentTime INTEGER NOT NULL,
+      description TEXT,
       timestamp INTEGER NOT NULL DEFAULT (CAST(strftime('%s') AS INTEGER)),
       FOREIGN KEY (hobbyId) REFERENCES hobbies(id)
     );
   `);
   
+// one time adding field
+// db.exec(`ALTER TABLE hobby_time ADD COLUMN description TEXT`);
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT NOT NULL PRIMARY KEY,
@@ -86,15 +90,16 @@ export function getHobbyTimeList(userId: string) {
   return rows;
 };
 
-export function setHobbyTime(hobby_id: number, spent_time: number) {
+export function setHobbyTime(hobby_id: number, spent_time: number, description: string) {
 
   const insert = db.prepare(
-    'INSERT INTO hobby_time (hobbyId, spentTime) VALUES(:hobbyId, :spentTime)'
+  'INSERT INTO hobby_time (hobbyId, spentTime, description) VALUES(:hobbyId, :spentTime, :description)'
   );
 
   insert.run({
     hobbyId: hobby_id,
-    spentTime: spent_time
+    spentTime: spent_time,
+    description: description
   });
 }
 
@@ -112,6 +117,16 @@ export function getSpentTimesToday(userId: string) {
 
     GROUP BY ht.hobbyId
   `).all(userId);
+
+  return rows;
+}
+
+export function getDetailsSpentTimes(hobbyId: number) {
+  const rows = db.prepare(`
+      SELECT 
+        ht.description AS description, 
+        ht.spentTime AS spentTime FROM hobby_time ht WHERE ht.hobbyId = ?
+    `).all(hobbyId);
 
   return rows;
 }
