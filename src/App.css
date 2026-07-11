@@ -1,4 +1,51 @@
 
+/* App layout and navigation */
+.appLayout{
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+body { height: 275px; margin: 0; }
+#root {
+  display: flex;
+  gap: 10px;
+  height: 100%;
+}
+
+nav {
+  padding: 10px;
+  background: #eee;
+  font-size: 14px;
+  height: 100%;
+}
+
+.menuList {
+  display: flex;
+  flex-direction: column; 
+  gap: 0px;                
+  margin-top: 8px;       
+}
+
+main {
+  padding: 10px;
+}
+p {
+  margin: 0;
+}
+h1 {
+  margin-top: 10px;
+}
+.indicator {
+  margin-left: 4px;
+  display: inline-block;
+  rotate: 90deg;
+}
+.indicator.down {
+  rotate: 180deg;
+}
+
+
 /* Button */
 .btn {
   height: 44px;
@@ -62,7 +109,7 @@
   flex-direction: row;
   align-items: center;
   gap: 22px;
-  margin-left: clamp(12px, 4vw, 48px);
+  margin-left: clamp(12px, 4vw, 4px);
 }
 
 /* DataTable */
@@ -71,6 +118,19 @@
   border-collapse: collapse;
   font-size: 18px;
 }
+
+.dataTable__title {
+  text-align: center;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 4
+  px; 
+}
+
+.dataTable__titleRow th {
+  padding: 10px 0;
+}
+
 
 .dataTable__th {
   text-align: left;
@@ -85,4 +145,55 @@
 
 .dataTable__tr:nth-child(even) {
   background: transparent; /* keep plain like screenshot */
+}
+
+
+/* add new hobby form */
+.hobbyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+}
+.hobbyForm__actions {
+  display: flex;
+  justify-content: flex-end; 
+  margin-top: auto; 
+  gap: 8px
+}
+.hobbyForm__row {
+  display: flex;
+  gap: 12px; 
+  align-items: center;
+}
+
+/* form adding details to hobby activities */
+.formCard {
+  background: white;
+  padding: 16px;
+  border-radius: 10px;
+  width: auto;
+}
+
+.formTitle {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.formColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* vertical distance between input and actions */
+}
+
+.formInput {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px; /* distance between buttons */
 }

@@ -4,7 +4,10 @@ import { DatabaseSync } from 'node:sqlite';
 const db = new DatabaseSync('my.db');
 
 export function initDb() {
+  // migration();
   // hobbies db
+  db.exec('PRAGMA foreign_keys = ON;');
+
     db.exec(`
       CREATE TABLE IF NOT EXISTS hobbies (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,12 +25,9 @@ export function initDb() {
       spentTime INTEGER NOT NULL,
       description TEXT,
       timestamp INTEGER NOT NULL DEFAULT (CAST(strftime('%s') AS INTEGER)),
-      FOREIGN KEY (hobbyId) REFERENCES hobbies(id)
+      FOREIGN KEY (hobbyId) REFERENCES hobbies(id) ON DELETE CASCADE
     );
   `);
-  
-// one time adding field
-// db.exec(`ALTER TABLE hobby_time ADD COLUMN description TEXT`);
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
@@ -36,6 +36,34 @@ export function initDb() {
     );
   `);
 
+ // Indexes
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_hobbies_userId ON hobbies(userId);`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_hobby_time_hobbyId ON hobby_time(hobbyId);`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_hobby_time_timestamp ON hobby_time(timestamp);`);
+}
+
+// uses to migrate ON DELETE CASCADE
+function migration() {
+  db.exec(`ALTER TABLE hobby_time RENAME TO hobby_time_old;`);
+
+db.exec(`
+  CREATE TABLE hobby_time (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    hobbyId INTEGER NOT NULL,
+    spentTime INTEGER NOT NULL,
+    description TEXT,
+    timestamp INTEGER NOT NULL DEFAULT (CAST(strftime('%s') AS INTEGER)),
+    FOREIGN KEY (hobbyId) REFERENCES hobbies(id) ON DELETE CASCADE
+  );
+`);
+
+db.exec(`
+  INSERT INTO hobby_time (id, hobbyId, spentTime, description, timestamp)
+  SELECT id, hobbyId, spentTime, description, timestamp
+  FROM hobby_time_old;
+`);
+
+db.exec(`DROP TABLE hobby_time_old;`);
 }
 
 export function getDb() {
@@ -108,7 +136,8 @@ export function getSpentTimesToday(userId: string) {
     SELECT
       SUM(ht.spentTime) AS spentTime,
       h.name AS name,
-      h.description AS description
+      h.description AS description,
+      ht.timestamp AS timestamp
     FROM hobbies h
     JOIN hobby_time ht ON h.id = ht.hobbyId
     WHERE h.userId = ?
@@ -129,4 +158,13 @@ export function getDetailsSpentTimes(hobbyId: number) {
     `).all(hobbyId);
 
   return rows;
+}
+
+export function deleteHobby(id: number) {
+  const stmt = db.prepare(`
+    DELETE FROM hobbies WHERE id = ?   
+  `);
+
+    const res = stmt.run(id);
+    return res.changes;
 }

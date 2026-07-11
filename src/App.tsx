@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { Activity, useState, useEffect, useRef } from 'react';
 
 import axios from 'axios';
 
@@ -7,30 +7,33 @@ import axios from 'axios';
 import './App.css';
 import { apiConfig } from './config/api'
 
+import Sidebar from './components/SideBar';
 import Select from './components/Select';
 import Timer from './components/Timer';
 
 import { Hobby, HobbyTime, HobbyDetailsTime } from './models/hobby';
-import HobbyForm from './components/HobbyForm';
 import Button, { ButtonType } from './components/Button';
 
 import DataTable from './components/DataTable';
-import { formatTime, startOfLocalDay, isTodayLocal } from './utils/helpers';
+import { formatTime } from './utils/helpers';
 
 import FormAlert from './components/HobbyWriteForm';
-import { setSelectionRange } from '@testing-library/user-event/dist/utils';
+
+// models and type
+import { Menu } from './models/menu';
+import { Editor } from './components/Editor';
+import { Statistics } from './components/Statistics';
 
 
 enum State {
   starting = 0,
-  adding,
-  showing,
   selected,
   closeCount,
   startCounting,
   stopCounting,
-  showDetailsHobby
 }
+
+
 
 const api = axios.create({
   withCredentials: true
@@ -38,6 +41,9 @@ const api = axios.create({
 
 function App() {
   const [state, setState] = useState(State.starting);
+  const [menu, setMenu] = useState<Menu>(Menu.main);
+
+  const [isShowSidebar, setIsShowSidebar] = useState(true);
   
   const [dataHobbies, setDataHobbies] = useState<Hobby[]>([]);
   const [selectedItem, setSelectedItem] =  useState<{id: number; name: string} | null>(null);
@@ -56,22 +62,22 @@ function App() {
 
       await api.get(apiConfig.endpoints.auth.init());
 
-      const [hobbyRes, timesRes] = await Promise.all([
-        api.get(apiConfig.endpoints.hobby.list()),
-        api.get(apiConfig.endpoints.hobby.times()),
-      ]);
-
-      const hobbies = hobbyRes.data.map(
-        (h: { id: number; name: string; description: string }) =>
-          new Hobby(h.id, h.name, h.description)
-      );
-
-      setDataHobbies(hobbies);
+      await loadHobbies();
     };
 
     bootstrap().catch(console.error);
 
   }, []);
+
+  const loadHobbies = async () => {
+    const res = await api.get(apiConfig.endpoints.hobby.list());
+    const hobbies = res.data.map(
+      (h: { id: number; name: string, description: string }) =>
+        new Hobby(h.id, h.name, h.description)
+    );
+
+    setDataHobbies(hobbies);
+  };
 
   function lookupHobbies(id: number): Hobby | undefined {
     const res = dataHobbies.find(item => {
@@ -87,7 +93,7 @@ function App() {
   }
 
   function onSaveHobbyTime(value: number, description: string | undefined) {
-    setState(State.showing);
+    setState(State.selected);
     if (!selectedItem) return;
   
     setCurrentSpentTime(0);
@@ -119,27 +125,54 @@ function App() {
   }
 
   function onCloseClick() {
-    setState(State.starting);
+    setState(State.selected);
   } 
 
-  function handleSubmitForm(name: string, description: string) {
 
-    const json = {
-      name: name,
-      description: description
-    };
-    api.post(apiConfig.endpoints.hobby.addHobby(), json)
-    .then((response) => {
-      console.log(`response: ${response.data}`)
-    const newHobby = new Hobby(response.data.id, name, description);
-    let newHobbies = dataHobbies.slice();
-    newHobbies.push(newHobby);
-    setDataHobbies(newHobbies);
-    setState(State.starting);
-    }).catch(error => {
+  async function handleSubmitForm(name: string, description: string): Promise<boolean> {
+    const json = { name: name, description: description }
+    try {
+      const response = await api.post(apiConfig.endpoints.hobby.addHobby(), json);
+      const newHobby = new Hobby(response.data.id, name, description);
+      setDataHobbies(prev => [...prev, newHobby]);
+      
+      return true;
+    } catch(error) {
       console.error(`error add hobby: ${error}`);
-    });
-  };
+      
+      return false;
+    }
+  }
+
+  async function handleDelete(hobbyId: number): Promise<boolean> {
+    try {
+      await api.delete(apiConfig.endpoints.hobby.delete(hobbyId));
+      await loadHobbies();
+
+      return true;
+    } catch(error: any) {
+      console.error(`error delete Hobby: ${error}`);
+
+      return false;
+    }
+  }
+
+  async function loadTimes(): Promise<boolean> {
+    try {
+      const res = await api.get(apiConfig.endpoints.hobby.times());
+      const times = res.data.map(
+        (item: {name: string, description: string, spentTime: number, timestamp: number}) => 
+          new HobbyTime(item.name, item.description, item.spentTime, item.timestamp)
+      )
+      setDataHobbyTimes(times);
+
+      return true;
+    } catch(error) {
+      console.error(`error getting today activities: ${error}`);
+
+      return false;
+    }  
+  }
 
   function handleSelect(value: number) {
     const prop = lookupHobbies(value);
@@ -148,126 +181,124 @@ function App() {
     setState(State.selected);
   } 
 
-  function handleShowDetails() {
-    api.get(apiConfig.endpoints.hobby.details(), { params: { hobbyId: selectedItem?.id } })
-    .then((response: { data: HobbyDetailsTime[] }) => {
-      const newHobbyDetails = response.data.map(item => new HobbyDetailsTime(item.description, item.spentTime));
+  async function handleShowDetails(hobbyId: number): Promise<boolean> {
+    try {
+      let response = await api.get(apiConfig.endpoints.hobby.details(), { params: { hobbyId: hobbyId } })
+    
+      const newHobbyDetails = response.data.map((item: { description: string; spentTime: number; }) => new HobbyDetailsTime(item.description, item.spentTime));
       setDataHobbyDetailsTime(newHobbyDetails);
-      setState(State.showDetailsHobby);
-    })
+
+      return true
+    } catch(error) {
+      console.error(`error getting details report: ${error}`);
+
+      return false
+    }
   }
 
+  function handleUpdateHobby(updated: Hobby) {
+    setDataHobbies(prev =>
+      prev.map(h => (h.id === updated.id ? updated : h))
+    );
+  }
+
+  function handleMenu(menu: Menu) {
+    switch (menu) {
+      case Menu.statistics:
+        //  handleShowDetails();
+         break;
+      default: 
+         break;
+    };
+   
+    setMenu(menu);
+  };
+
+    function onHandleCancelHobbytime() {
+      setState(State.selected);
+    }
+
   return (
-    <div className='rowContent'>
-      { (state === State.starting || state === State.selected) && (
-        <div className='columnContent'>
-          <label>What will do:</label>
-          <Select 
-            items={dataHobbies.map(sel => ({ id: sel.id, name: sel.name }))}
-            onChange={ (value) => {handleSelect(value) }}
-          />
+    <>
+      <div className='appLayout'>
+        <Activity mode={isShowSidebar ? 'visible' : 'hidden'}>
+          <Sidebar onSelect={handleMenu}/>
+        </Activity>
 
-          {state === State.selected && (
-            <>
-              <label>Start timer for {selectedItem?.name}</label>
-              <Button
-                title="start"
-                type={ButtonType.btnPrimary}
-                onClick={() => {setState(State.startCounting)}}
+        <main>
+          <button onClick={() => setIsShowSidebar(!isShowSidebar)}>
+             Show menu
+          </button>
+          <div >
+
+           <Activity mode={menu === Menu.main ? 'visible' : 'hidden'}>
+             <div className='columnContent'>
+                <label>What will do:</label>
+                <Select 
+                  items={dataHobbies.map(sel => ({ id: sel.id, name: sel.name }))}
+                  onChange={ (value) => {handleSelect(value) }}
+                />
+
+                {state === State.selected && (
+                  <>
+                    <label>Start timer for {selectedItem?.name}</label>
+                    <Button
+                      title="start"
+                      type={ButtonType.btnPrimary}
+                      onClick={() => {setState(State.startCounting)}}
+                    />
+                  </>
+                )}
+
+                { state === State.startCounting && selectedItem && (
+                  <Timer 
+                    id={selectedItem.id} 
+                    name={selectedItem.name} 
+                    active={true}
+                    onStopClick={onStopClick} 
+                    onResetClick={onResetClick}
+                    onCloseClick={onCloseClick}
+                  />
+               )}
+
+                { state === State.stopCounting && (
+                  <FormAlert 
+                    title='Add description whats done'
+                    currentSpentTime={currentSpentTime}
+                    onSave={ onSaveHobbyTime }
+                    onCancel={ onHandleCancelHobbytime }
+                  />
+                )}
+
+              </div>
+          </Activity> 
+          
+          <Activity mode={menu === Menu.edit ? 'visible' : 'hidden'} >
+            <Editor 
+              hobbies={dataHobbies} 
+              onUpdateHobby={handleUpdateHobby} 
+              onSubmitHobby={handleSubmitForm}
+              onDeleteHobby={handleDelete}
+            /> 
+          </Activity>
+
+            
+
+
+            <Activity mode={menu === Menu.statistics ? 'visible' : 'hidden'} >
+              <Statistics 
+                hobbies={dataHobbies} 
+                hobbyDetailsTime={dataHobbyDetailsTime} 
+                onHobbyDetails={handleShowDetails} 
+                hobbyTimes={dataHobbyTimes}
+                onHobbyTimes={loadTimes}
               />
+            </Activity>
 
-              <label>Show details for {selectedItem?.name}</label>
-              <Button
-                title="show"
-                type={ButtonType.btnPrimary}
-                onClick={handleShowDetails}
-              />
-
-            </>
-          )}
-
-          <label>or add new activity:</label>
-          <Button 
-            title='add' 
-            type={ButtonType.btnSecond} 
-            onClick={ () => {
-              setState(State.adding)}} 
-          />
-
-          <label>or see today activities:</label>
-          <Button 
-            title='show' 
-            type={ButtonType.btnSecond} 
-            onClick={ () => {
-              setState(State.showing)}} 
-          />
-
-        </div>
-      )}
-
-      { state === State.adding && (
-        <HobbyForm onSubmit={handleSubmitForm} />
-      )}
-      
-      { state === State.startCounting && selectedItem && (
-        <Timer 
-          id={selectedItem.id} 
-          name={selectedItem.name} 
-          active={true}
-          onStopClick={onStopClick} 
-          onResetClick={onResetClick}
-          onCloseClick={onCloseClick}
-        />
-      )}
-
-      { state === State.stopCounting && (
-        <FormAlert 
-          title='Save?'
-          currentSpentTime={currentSpentTime}
-          onSave={ onSaveHobbyTime }
-        />
-      )}
-
-      { state === State.showing && (
-        <div className='columnContent'>
-          <Button 
-            title='Back'
-            type={ButtonType.btnSecond}
-            onClick={() => {setState(State.starting)}}
-          />
-          <br/>
-
-          <DataTable 
-            items={dataHobbyTimes}
-            columns={[
-              { header: 'Name', cell: (h) => h.name },
-              { header: 'Description', cell: (h) => h.description },
-              { header: 'Spent Time', cell: (h) => formatTime(h.spentTime) }
-            ]}
-          />
-        </div>
-      )}
-
-      { state === State.showDetailsHobby && (
-        <div className='columnContent'>
-          <Button 
-            title='Back'
-            type={ButtonType.btnSecond}
-            onClick={() => {setState(State.starting)}}
-          />
-          <br/>
-
-          <DataTable 
-            items={dataHobbyDetailsTime}
-            columns={[
-              { header: 'Description', cell: (h) => h.description },
-              { header: 'Spent Time', cell: (h) => formatTime(h.spentTime) }
-            ]}
-          />
-        </div>
-      )}
-
-    </div>
+          </div>
+        </main>
+      </div>
+    </>
   );
 }
 

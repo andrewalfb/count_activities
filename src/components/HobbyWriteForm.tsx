@@ -4,57 +4,57 @@ import Button, { ButtonType } from "./Button";
 interface Props {
     title: string,
     currentSpentTime: number,
-    onSave: (spent: number, description: string | undefined) => void
+    onSave: (spent: number, description: string | undefined) => void,
+    onCancel: () => void
 }
 
-export default function FormAlert({ title, currentSpentTime, onSave }: Props ){
+export default function FormAlert({ 
+    title, 
+    currentSpentTime, 
+    onSave, 
+    onCancel
+}: Props ){
 
     const [description, setDescription] = useState("");
     let spentTime = currentSpentTime
 
 
     return (
-        <>
-            <div
-                style={{
-                    background: "white",
-                    padding: 16,
-                    borderRadius: 10,
-                    width: 320,
+
+        <div className='formCard'>
+            <div className='formTitle'>{ title }</div>
+
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    onSave(currentSpentTime, description);
                 }}
-                >
-                <div style={{ fontWeight: 700, marginBottom: 8 }}>
-                    { title }
+            >
+                <div className='formColumn'>
+                    <input
+                        className='formInput'
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder='What is done'
+                        style={{ width: "100%", padding: 8, marginBottom: 12 }}
+                    />
+
+                    <div className='formActions'>
+                        <Button 
+                            buttonType='submit'
+                            type={ButtonType.btnPrimary}
+                            onClick={() => { onSave(spentTime, description); }}
+                            title='Save'
+                        />
+                        <Button 
+                            type={ButtonType.btnSecond}
+                            onClick={onCancel}
+                            title='Cancel'
+                        />
+                    </div>
                 </div>
 
-                <form
-                    onSubmit={(e) => {
-                    e.preventDefault();
-                    // handle submit
-                    onSave(currentSpentTime, description);
-                    }}
-                >
-                    <input
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="email@example.com"
-                    style={{ width: "100%", padding: 8, marginBottom: 12 }}
-                    />
-
-                    <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                    <Button 
-                        type={ButtonType.btnPrimary}
-                        onClick={() => { onSave(spentTime, description); }}
-                        title='Save'
-                    />
-                    <Button 
-                        type={ButtonType.btnSecond}
-                        onClick={() => {} }
-                        title='Cancel'
-                    />
-                    </div>
-                </form>
-            </div>
-        </>
+            </form>
+        </div>
     );
 }

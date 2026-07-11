@@ -1,5 +1,5 @@
 
-import { getHobbiesList, getSpentTimesToday, setHobby, setHobbyTime, getDetailsSpentTimes } from '../database';
+import { getHobbiesList, getSpentTimesToday, setHobby, setHobbyTime, getDetailsSpentTimes, deleteHobby } from '../database';
 
 import type { Request, Response  } from 'express';
 
@@ -37,3 +37,22 @@ export const detailsSpentHobbyTimes = function(req: Request, res: Response) {
 
     return res.json(rows);
 }
+
+export const deleteAllInformationHobby = (req: Request, res: Response) => {
+  const hobbyIdRaw = req.params.id;
+
+  const hobbyId = Number(hobbyIdRaw);
+  if (!Number.isFinite(hobbyId)) return res.status(400).json({ message: "Wrong hobbyId" });
+
+  try {
+    const rowsDeleted = deleteHobby(hobbyId);
+    console.log(`delete: ${rowsDeleted}`);
+
+    if (rowsDeleted === 0) return res.status(404).json({ message: "Hobby not found" });
+
+    return res.sendStatus(200);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ message: "Failed to delete hobby information" });
+  }
+};
