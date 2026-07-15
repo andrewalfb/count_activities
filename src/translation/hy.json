@@ -38,6 +38,7 @@
         "todayActivities": "Այսօրվա գործողություններ",
         "detailsReport": "Մանրամասների հաշվետվություն՝ {{name}}",
         "todayActivitiesReport": "Այսօրվա գործողությունների հաշվետվություն",
+        "loading": "Բեռնվում է...",
         "description": "Նկարագրություն",
         "spentTime": "Ծախսված ժամանակ",
         "name": "Անուն",
@@ -57,5 +58,8 @@
     },
     "select": {
         "default": "Ընտրել..."
+    },
+    "spinner": {
+        "title": "..."
     }
 }

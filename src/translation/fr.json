@@ -38,6 +38,7 @@
         "todayActivities": "Activités du jour",
         "detailsReport": "Rapport détaillé : {{name}}",
         "todayActivitiesReport": "Rapport des activités du jour",
+        "loading": "Chargement...",
         "description": "Description",
         "spentTime": "Temps passé",
         "name": "Nom",
@@ -57,5 +58,8 @@
     },
     "select": {
         "default": "Sélectionner..."
+    },
+    "spinner": {
+        "title": "..."
     }
 }

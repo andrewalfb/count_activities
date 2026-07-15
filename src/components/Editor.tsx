@@ -6,6 +6,10 @@ import  Button, { ButtonType } from "./Button"
 import { Hobby } from "../models/hobby"
 import HobbyForm from "./HobbyForm";
 
+// only for debug
+import { sleep } from "../utils/helpers";
+import { Spinner } from "./Spinner";
+
 interface Props {
     hobbies: Hobby[],
     onUpdateHobby: (hobby: Hobby) => void,
@@ -42,6 +46,7 @@ export function Editor({
 
     async function handleFormSubmit(name: string, description: string) {
         setIsWaiting(true);
+        await sleep(3000);
         const ok = await onSubmitHobby(name, description);
         setIsWaiting(false);
         
@@ -55,6 +60,7 @@ export function Editor({
     async function handleDelete() {
         if (!selectedHobby) return;
         setIsWaiting(true);
+        await sleep(3000);
         const ok = await onDeleteHobby(selectedHobby.id);
         setIsWaiting(false);
 
@@ -64,7 +70,9 @@ export function Editor({
  
     return (
         <>
-            <Activity mode={isOpenForm ? 'hidden' : 'visible'} >
+            {isWaiting && (<Spinner name={t('editor.saving')}/>)}
+
+            <Activity mode={isOpenForm || isWaiting ? 'hidden' : 'visible'} >
                 <div className='columnContent' >   
                     <label>{t('editor.selectHobby')}</label>
                     <Select 
@@ -101,8 +109,6 @@ export function Editor({
 
             {isOpenForm && (
                 <div className='columnContent'>
-                    {isWaiting && <div>{t('editor.saving')}</div>}
-
                     <HobbyForm
                         onSubmit={handleFormSubmit}
                         onCancel={handleFormCancel}

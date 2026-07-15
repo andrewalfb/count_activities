@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import MenuButton from './MenuButton';
+
 import Button, { ButtonType } from './Button';
 
 import { Menu } from '../models/menu';
