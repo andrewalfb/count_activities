@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import Button, { ButtonType }  from "./Button";
 
 import { formatTime } from "../utils/helpers";
@@ -15,6 +16,7 @@ interface Props {
 }
 
  export default function Timer({ id, name, onStopClick, active, onResetClick, onCloseClick }: Props) {
+    const [t] = useTranslation();
     const [ startTime, setStartTime ] = useState(0);
     const [ now, setNow ] = useState(0);
     const intervalRef = useRef<number | null>(null);
@@ -83,11 +85,11 @@ interface Props {
     return (
         <div className="columnContent">
             <div className='timeDisplay'>{formatTime(secondsPass)}</div>
-            <div className='centerText'><i>Time for {name}</i></div>
+            <div className='centerText'><i>{t('timer.timeFor', { name })}</i></div>
             <div className='btn-wrap'>
-                <Button title={isWorking ? 'Stop' : 'Start'} onClick={isWorking ? handleStop : handleStart} />
-                <Button title='Reset' type={ButtonType.btnSecond} onClick={handleReset} />
-                <Button title='Close' type={ButtonType.btnSecond} onClick={handleClose} />
+                <Button title={isWorking ? t('timer.stop') : t('timer.start')} onClick={isWorking ? handleStop : handleStart} />
+                <Button title={t('timer.reset')} type={ButtonType.btnSecond} onClick={handleReset} />
+                <Button title={t('timer.close')} type={ButtonType.btnSecond} onClick={handleClose} />
             </div>
             
         </div>

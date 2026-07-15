@@ -45,6 +45,15 @@ h1 {
   rotate: 180deg;
 }
 
+/* language in main */
+.topMenu {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    padding-top: 3px;
+    padding-left: 0px;
+    padding-bottom: 8px;
+}
 
 /* Button */
 .btn {

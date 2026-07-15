@@ -1,4 +1,5 @@
 import { Activity, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import Select from "./Select"
 import  Button, { ButtonType } from "./Button"
@@ -18,6 +19,7 @@ export function Editor({
     onSubmitHobby, 
     onDeleteHobby,
 }: Props) {
+    const [t] = useTranslation();
     const [selectedId, setSelectedId] =  useState<number | null>(null);
     const [isWaiting, setIsWaiting] = useState(false);
     const [isOpenForm, setIsOpenForm] = useState(false);
@@ -64,30 +66,30 @@ export function Editor({
         <>
             <Activity mode={isOpenForm ? 'hidden' : 'visible'} >
                 <div className='columnContent' >   
-                    <label>Select hobby:</label>
+                    <label>{t('editor.selectHobby')}</label>
                     <Select 
                         items={hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
                         onChange={ (value) => {handleSelect(value) }}
                     />
 
-                    <label>add new hobby:</label>
+                    <label>{t('editor.addNewHobby')}</label>
                     <Button 
-                        title='add' 
+                        title={t('editor.add')} 
                         type={ButtonType.btnSecond} 
                         onClick={() => {setIsOpenForm(true)}} 
                     />
                     {selectedId && (
                         <>
-                            <label>delete hobby:</label>
+                            <label>{t('editor.deleteHobby')}</label>
                             <Button 
-                                    title='delete' 
+                                    title={t('editor.delete')} 
                                     type={ButtonType.btnSecond} 
                                     onClick={handleDelete} 
                                 />
 
-                                <label>edit activity:</label>
+                                <label>{t('editor.editActivity')}</label>
                                 <Button 
-                                    title='update' 
+                                    title={t('editor.update')} 
                                     type={ButtonType.btnSecond} 
                                     onClick={updateHobby} 
                                 />
@@ -99,7 +101,7 @@ export function Editor({
 
             {isOpenForm && (
                 <div className='columnContent'>
-                    {isWaiting && <div>Saving...</div>}
+                    {isWaiting && <div>{t('editor.saving')}</div>}
 
                     <HobbyForm
                         onSubmit={handleFormSubmit}

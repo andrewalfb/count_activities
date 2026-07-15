@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import MenuButton from './MenuButton';
 import Button, { ButtonType } from './Button';
 
@@ -11,6 +12,7 @@ type Props = {
 
 export default function Sidebar({onSelect}: Props) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [t] = useTranslation();
 
   function handleSelect(menu: Menu) {
     onSelect(menu);
@@ -20,7 +22,7 @@ export default function Sidebar({onSelect}: Props) {
   return (
     <nav>
       <button onClick={() => setIsExpanded(!isExpanded)}>
-        Menu
+        {t('sidebar.menu')}
         <span className={`indicator ${isExpanded ? 'down' : 'right'}`}>
           &#9650;
         </span>
@@ -31,19 +33,19 @@ export default function Sidebar({onSelect}: Props) {
         <Button 
             type={ButtonType.btnSecond} 
             onClick={() => { handleSelect(Menu.main)}}
-            title='Main'
+            title={t('sidebar.main')}
         />
 
         <Button 
             type={ButtonType.btnSecond} 
             onClick={() => { handleSelect(Menu.edit)}}
-            title='Edit Hobby'
+            title={t('sidebar.editHobby')}
         />
 
         <Button
             type={ButtonType.btnSecond}
             onClick={() => handleSelect(Menu.statistics)}
-            title="Statistics"
+            title={t('sidebar.statistics')}
         />
 
 

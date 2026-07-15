@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Button, { ButtonType } from "./Button";
 
 interface Props {
@@ -15,6 +16,7 @@ export default function FormAlert({
     onCancel
 }: Props ){
 
+    const [t] = useTranslation();
     const [description, setDescription] = useState("");
     let spentTime = currentSpentTime
 
@@ -35,7 +37,7 @@ export default function FormAlert({
                         className='formInput'
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        placeholder='What is done'
+                        placeholder={t('hobbyWriteForm.whatIsDone')}
                         style={{ width: "100%", padding: 8, marginBottom: 12 }}
                     />
 
@@ -44,12 +46,12 @@ export default function FormAlert({
                             buttonType='submit'
                             type={ButtonType.btnPrimary}
                             onClick={() => { onSave(spentTime, description); }}
-                            title='Save'
+                            title={t('hobbyWriteForm.save')}
                         />
                         <Button 
                             type={ButtonType.btnSecond}
                             onClick={onCancel}
-                            title='Cancel'
+                            title={t('hobbyWriteForm.cancel')}
                         />
                     </div>
                 </div>

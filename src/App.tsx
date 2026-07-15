@@ -2,7 +2,7 @@
 import { Activity, useState, useEffect, useRef } from 'react';
 
 import axios from 'axios';
-
+import { useTranslation } from 'react-i18next';
 
 import './App.css';
 import { apiConfig } from './config/api'
@@ -40,6 +40,8 @@ const api = axios.create({
 });
 
 function App() {
+  const [t,i18n] = useTranslation();
+
   const [state, setState] = useState(State.starting);
   const [menu, setMenu] = useState<Menu>(Menu.main);
 
@@ -214,9 +216,15 @@ function App() {
     setMenu(menu);
   };
 
-    function onHandleCancelHobbytime() {
-      setState(State.selected);
-    }
+  function onHandleCancelHobbytime() {
+    setState(State.selected);
+  }
+
+
+  const onClickLanguageChange = (e: any) => {
+    const language = e.target.value;
+    i18n.changeLanguage(language); //change the language
+  }
 
   return (
     <>
@@ -226,14 +234,23 @@ function App() {
         </Activity>
 
         <main>
-          <button onClick={() => setIsShowSidebar(!isShowSidebar)}>
-             Show menu
-          </button>
+  
+          <div className="topMenu">
+            <button onClick={() => setIsShowSidebar(!isShowSidebar)}>
+              {t('app.showMenu')}
+            </button>
+            <select className="custom-select" onChange={onClickLanguageChange}>
+              <option value="en" >{t('app.en')}</option>
+              <option value="fr" >{t('app.fr')}</option>
+              <option value="hy" >{t('app.hy')}</option>
+            </select>
+        </div>
+
           <div >
 
            <Activity mode={menu === Menu.main ? 'visible' : 'hidden'}>
              <div className='columnContent'>
-                <label>What will do:</label>
+                <label>{t('app.whatWillDo')}</label>
                 <Select 
                   items={dataHobbies.map(sel => ({ id: sel.id, name: sel.name }))}
                   onChange={ (value) => {handleSelect(value) }}
@@ -241,9 +258,9 @@ function App() {
 
                 {state === State.selected && (
                   <>
-                    <label>Start timer for {selectedItem?.name}</label>
+                    <label>{t('app.timerStartLabel', { name: selectedItem?.name ?? '' })}</label>
                     <Button
-                      title="start"
+                      title={t('app.start')}
                       type={ButtonType.btnPrimary}
                       onClick={() => {setState(State.startCounting)}}
                     />
@@ -263,7 +280,7 @@ function App() {
 
                 { state === State.stopCounting && (
                   <FormAlert 
-                    title='Add description whats done'
+                    title={t('hobbyWriteForm.whatIsDone')}
                     currentSpentTime={currentSpentTime}
                     onSave={ onSaveHobbyTime }
                     onCancel={ onHandleCancelHobbytime }

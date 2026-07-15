@@ -1,0 +1,61 @@
+{
+    "hobbyForm": {
+        "nameLabel": "Nom du loisir",
+        "namePlaceholder": "nouveau loisir",
+        "descriptionLabel": "Description du loisir",
+        "descriptionPlaceholder": "description du loisir",
+        "save": "Enregistrer",
+        "cancel": "Annuler"
+    },
+    "app": {
+        "en": "Anglais",
+        "fr": "Français",
+        "hy": "Arménien",
+        "showMenu": "Afficher le menu",
+        "whatWillDo": "Que faire :",
+        "start": "Démarrer",
+        "timerStartLabel": "Démarrer le minuteur pour {{name}}"
+    },
+    "sidebar": {
+        "menu": "Menu",
+        "main": "Accueil",
+        "editHobby": "Modifier le loisir",
+        "statistics": "Statistiques"
+    },
+    "editor": {
+        "selectHobby": "Sélectionner un loisir :",
+        "addNewHobby": "Ajouter un nouveau loisir :",
+        "deleteHobby": "Supprimer le loisir :",
+        "editActivity": "Modifier l'activité :",
+        "add": "Ajouter",
+        "delete": "Supprimer",
+        "update": "Mettre à jour",
+        "saving": "Enregistrement..."
+    },
+    "statistics": {
+        "selectHobby": "Sélectionner un loisir :",
+        "timeReport": "Rapport de temps",
+        "todayActivities": "Activités du jour",
+        "detailsReport": "Rapport détaillé : {{name}}",
+        "todayActivitiesReport": "Rapport des activités du jour",
+        "description": "Description",
+        "spentTime": "Temps passé",
+        "name": "Nom",
+        "close": "Fermer"
+    },
+    "timer": {
+        "timeFor": "Temps pour {{name}}",
+        "stop": "Arrêter",
+        "start": "Démarrer",
+        "reset": "Réinitialiser",
+        "close": "Fermer"
+    },
+    "hobbyWriteForm": {
+        "whatIsDone": "Qu'est-ce qui a été fait",
+        "save": "Enregistrer",
+        "cancel": "Annuler"
+    },
+    "select": {
+        "default": "Sélectionner..."
+    }
+}

@@ -1,4 +1,5 @@
 import { Activity, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { formatTime } from "../utils/helpers";
 import Button, { ButtonType } from "./Button";
@@ -22,6 +23,7 @@ export function Statistics({
     hobbyTimes,
     onHobbyTimes,
 }: Props) {
+    const [t] = useTranslation();
     const [selectedId, setSelectedId] =  useState<number | null>(null);
     const [isWaiting, setIsWaiting] = useState(false);
     
@@ -57,21 +59,21 @@ export function Statistics({
     <>
         <Activity mode={isShowDetailsReport || isShowTodayActivities ? 'hidden' : 'visible'} >  
             <div className='columnContent'>
-                <label>Select hobby:</label>
+                <label>{t('statistics.selectHobby')}</label>
                 <Select 
                     items={hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
                     onChange={ (value) => {handleSelect(value) }}
                 />
             { selectedId && (
                 <Button
-                    title='time report'
+                    title={t('statistics.timeReport')}
                     type={ButtonType.btnSecond}
                     onClick={handleDetailsReport}
                 />
             )}
 
             <Button
-                title='today activities'
+                title={t('statistics.todayActivities')}
                 type={ButtonType.btnSecond}
                 onClick={handleTodayActivitiesReport}
             />
@@ -82,15 +84,15 @@ export function Statistics({
         <Activity mode={isShowDetailsReport ? 'visible' : 'hidden'} >
             <div className="columnContent" >
                 <DataTable
-                    title={`Details report: ${selectedHobby?.name}`}
+                    title={t('statistics.detailsReport', { name: selectedHobby?.name ?? '' })}
                     items={hobbyDetailsTime}
                     columns={[
-                        { header: 'Description', cell: (h) => h.description },
-                        { header: 'Spent Time', cell: (h) => formatTime(h.spentTime) }
+                        { header: t('statistics.description'), cell: (h) => h.description },
+                        { header: t('statistics.spentTime'), cell: (h) => formatTime(h.spentTime) }
                     ]} 
                 />
                 <Button
-                    title='Close'
+                    title={t('statistics.close')}
                     type={ButtonType.btnSecond}
                     onClick={() => setIsShowDetailsReport(false)}
                 />                
@@ -101,16 +103,16 @@ export function Statistics({
         <Activity mode={isShowTodayActivities ? 'visible' : 'hidden'}>
               <div className='columnContent'>
                 <DataTable 
-                  title={`Today Activities report`}
+                  title={t('statistics.todayActivitiesReport')}
                   items={hobbyTimes}
                   columns={[
-                    { header: 'Name', cell: (h) => h.name },
-                    { header: 'Description', cell: (h) => h.description },
-                    { header: 'Spent Time', cell: (h) => formatTime(h.spentTime) }
+                    { header: t('statistics.name'), cell: (h) => h.name },
+                    { header: t('statistics.description'), cell: (h) => h.description },
+                    { header: t('statistics.spentTime'), cell: (h) => formatTime(h.spentTime) }
                   ]}
                 />
                 <Button
-                    title='Close'
+                    title={t('statistics.close')}
                     type={ButtonType.btnSecond}
                     onClick={() => setIsShowTodayActivities(false)}
                 />   

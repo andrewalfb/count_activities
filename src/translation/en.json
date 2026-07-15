@@ -1,0 +1,61 @@
+{
+    "hobbyForm": {
+        "nameLabel": "Name hobby",
+        "namePlaceholder": "new hobby",
+        "descriptionLabel": "Description hobby",
+        "descriptionPlaceholder": "description hobby",
+        "save": "Save",
+        "cancel": "Cancel"
+    },
+    "app": {
+        "en": "English",
+        "fr": "French",
+        "hy": "Armenian",
+        "showMenu": "Show menu",
+        "whatWillDo": "What will do:",
+        "start": "Start",
+        "timerStartLabel": "Start timer for {{name}}"
+    },
+    "sidebar": {
+        "menu": "Menu",
+        "main": "Main",
+        "editHobby": "Edit Hobby",
+        "statistics": "Statistics"
+    },
+    "editor": {
+        "selectHobby": "Select hobby:",
+        "addNewHobby": "Add new hobby:",
+        "deleteHobby": "Delete hobby:",
+        "editActivity": "Edit activity:",
+        "add": "Add",
+        "delete": "Delete",
+        "update": "Update",
+        "saving": "Saving..."
+    },
+    "statistics": {
+        "selectHobby": "Select hobby:",
+        "timeReport": "Time report",
+        "todayActivities": "Today activities",
+        "detailsReport": "Details report: {{name}}",
+        "todayActivitiesReport": "Today activities report",
+        "description": "Description",
+        "spentTime": "Spent Time",
+        "name": "Name",
+        "close": "Close"
+    },
+    "timer": {
+        "timeFor": "Time for {{name}}",
+        "stop": "Stop",
+        "start": "Start",
+        "reset": "Reset",
+        "close": "Close"
+    },
+    "hobbyWriteForm": {
+        "whatIsDone": "What is done",
+        "save": "Save",
+        "cancel": "Cancel"
+    },
+    "select": {
+        "default": "Select..."
+    }
+}

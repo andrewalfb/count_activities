@@ -1,0 +1,61 @@
+{
+    "hobbyForm": {
+        "nameLabel": "Հոբիի անունը",
+        "namePlaceholder": "նոր հոբի",
+        "descriptionLabel": "Հոբիի նկարագրությունը",
+        "descriptionPlaceholder": "նկարագրություն",
+        "save": "Պահպանել",
+        "cancel": "Չեղարկել"
+    },
+    "app": {
+        "en": "Անգլերեն",
+        "fr": "Ֆրանսերեն",
+        "hy": "Հայերեն",
+        "showMenu": "Ցույց տալ մենյուն",
+        "whatWillDo": "Ինչ կանի՞",
+        "start": "Սկսել",
+        "timerStartLabel": "Սկսել ժմչփը՝ {{name}}"
+    },
+    "sidebar": {
+        "menu": "Մենյու",
+        "main": "Գլխավոր",
+        "editHobby": "Խմբագրել հոբին",
+        "statistics": "Վիճակագրություն"
+    },
+    "editor": {
+        "selectHobby": "Ընտրել հոբի:",
+        "addNewHobby": "Ավելացնել նոր հոբի:",
+        "deleteHobby": "Ջնջել հոբին:",
+        "editActivity": "Խմբագրել գործողությունը:",
+        "add": "Ավելացնել",
+        "delete": "Ջնջել",
+        "update": "Թարմացնել",
+        "saving": "Պահպանվում է..."
+    },
+    "statistics": {
+        "selectHobby": "Ընտրել հոբի:",
+        "timeReport": "Ժամանակի հաշվետվություն",
+        "todayActivities": "Այսօրվա գործողություններ",
+        "detailsReport": "Մանրամասների հաշվետվություն՝ {{name}}",
+        "todayActivitiesReport": "Այսօրվա գործողությունների հաշվետվություն",
+        "description": "Նկարագրություն",
+        "spentTime": "Ծախսված ժամանակ",
+        "name": "Անուն",
+        "close": "Փակել"
+    },
+    "timer": {
+        "timeFor": "{{name}}-ի համար",
+        "stop": "Կանգնեցնել",
+        "start": "Սկսել",
+        "reset": "Վերականգնել",
+        "close": "Փակել"
+    },
+    "hobbyWriteForm": {
+        "whatIsDone": "Ինչ է արվել",
+        "save": "Պահպանել",
+        "cancel": "Չեղարկել"
+    },
+    "select": {
+        "default": "Ընտրել..."
+    }
+}
