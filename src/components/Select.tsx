@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 
 type Item = {id: number, name: string}
@@ -10,8 +11,8 @@ interface Props {
 
 
 export default function Select({ items, onChange }: Props) {
-    const [selected, setSelected] = useState(0)
-
+  const [t] = useTranslation();  
+  const [selected, setSelected] = useState(0)
 
     const rows = items.map ((item) => (
       <option key={item.id} value={item.id}>{item.name}</option>
@@ -27,7 +28,7 @@ export default function Select({ items, onChange }: Props) {
     }}
   >
    <option value='' defaultValue=''>
-    Select...
+    {t('select.default')}
    </option>  
     {rows}
   </select>

@@ -4,8 +4,10 @@ export type ApiConfig = {
     hobby: {
         list: () => string;
         times: () => string;
+        details: () => string;
         addTimes: () => string;
         addHobby: () => string;
+        delete: (hobbyId: number) => string;
     },
     auth: {
         init: () => string;
@@ -26,8 +28,10 @@ export const apiConfig: ApiConfig = {
         hobby: {
             list: () => `${baseUrl}/hobby/`,
             times: () => `${baseUrl}/hobby/times`,
+            details: () => `${baseUrl}/hobby/details`,
             addTimes: () => `${baseUrl}/hobby/add_time`,
-            addHobby: () => `${baseUrl}/hobby/add`
+            addHobby: () => `${baseUrl}/hobby/add`,
+            delete: (hobbyId) => `${baseUrl}/hobby/deleteHobby/${hobbyId}`,
         },
         auth: {
             init: () => `${baseUrl}/auth/init`

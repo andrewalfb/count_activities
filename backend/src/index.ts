@@ -28,25 +28,25 @@ app.use(function simpleLogger(req, res, next) {
   const start = Date.now();
   res.on('finish', () => {
     const ms = Date.now() - start;
-    console.log(`${req.method} ${req.originalUrl} -> ${res.statusCode} (${ms}ms) ip: ${req.ip}`);
+    console.log(`${req.method} ${req.originalUrl} -> ${res.statusCode} (${ms}ms) ip: ${req.ip} cookie: ${req.cookies.anon_id}`);
   });
-  console.log(`cookie: ${req.cookies.anon_id}`);
+  // console.log(`cookie: ${req.cookies.anon_id}`);
       // temporary log db in memory
-    const db = getDb();
-    const hobbies = db.prepare(
-      'SELECT * FROM hobbies'
-    ).all();
-   const users = db.prepare(
-      'SELECT * FROM users'
-    ).all();
+  //   const db = getDb();
+  //   const hobbies = db.prepare(
+  //     'SELECT * FROM hobbies'
+  //   ).all();
+  //  const users = db.prepare(
+  //     'SELECT * FROM users'
+  //   ).all();
 
-    const times = db.prepare(
-      'SELECT * FROM hobby_time'
-    ).all();
+  //   const times = db.prepare(
+  //     'SELECT * FROM hobby_time'
+  //   ).all();
 
-    console.log(users);
-    console.log(hobbies);
-    console.log(times);
+  //   console.log(users);
+  //   console.log(hobbies);
+  //   console.log(times);
     //
   
   

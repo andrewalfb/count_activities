@@ -8,16 +8,23 @@ export enum ButtonType {
 interface Props {
     title: string,
     type?: ButtonType,
-    onClick: () => void
+    onClick: () => void,
+    buttonType?: 'button' | 'submit' | 'reset'
 }
 
-export default function Button({ title, type = ButtonType.btnPrimary, onClick }: Props) {
+export default function Button({ 
+    title, 
+    type = ButtonType.btnPrimary, 
+    onClick,
+    buttonType = 'button'
+ }: Props) {
 
     return (
         <>
         <button
             className={type === ButtonType.btnPrimary ? 'btn btnPrimary' : 'btn '} 
             onClick={onClick}
+            type={buttonType}
         >
             {title}
         </button>

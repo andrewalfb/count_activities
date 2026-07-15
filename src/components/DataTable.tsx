@@ -1,3 +1,4 @@
+import { title } from "process";
 import React from "react";
 
 type Column<T> = {
@@ -5,14 +6,30 @@ type Column<T> = {
   cell: (row: T) => React.ReactNode;
 };
 
-export default function DataTable<T>({ items, columns }: { 
+
+type Props<T> = {
+  title?: string; 
   items: T[];
   columns: Column<T>[];
-}) {
+};
+
+
+export default function DataTable<T>({ 
+  title, 
+  items, 
+  columns, 
+}: Props<T> ) {
 
   return (
     <table className="dataTable">
       <thead>
+        { title && (
+        <tr className="dataTable__titleRow">
+          <th className="dataTable__title" colSpan={columns.length}>
+            {title}
+          </th>
+        </tr>
+        )}
         <tr>
           {columns.map((c) => (
             <th key={c.header} className="dataTable__th">

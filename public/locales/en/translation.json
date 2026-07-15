@@ -1,0 +1,10 @@
+{
+  "hobbyForm": {
+    "nameLabel": "Name hobby",
+    "namePlaceholder": "new hobby",
+    "descriptionLabel": "Description hobby",
+    "descriptionPlaceholder": "description hobby",
+    "save": "Save",
+    "cancel": "Cancel"
+  }
+}
