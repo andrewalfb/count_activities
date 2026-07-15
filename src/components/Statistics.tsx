@@ -6,7 +6,10 @@ import Button, { ButtonType } from "./Button";
 import DataTable from "./DataTable";
 import { Hobby, HobbyDetailsTime, HobbyTime } from "../models/hobby";
 import Select from "./Select";
+import { Spinner } from "./Spinner";
 
+// only for debug
+import { sleep } from "../utils/helpers";
 
 interface Props {
     hobbies: Hobby[],
@@ -42,22 +45,31 @@ export function Statistics({
     async function handleDetailsReport() {
         if (!selectedHobby) return;
         setIsWaiting(true);
-        const ok = await onHobbyDetails(selectedHobby.id);
-        setIsWaiting(false);
-        if (ok) setIsShowDetailsReport(true);
+        try {
+            await sleep(3000);
+            const ok = await onHobbyDetails(selectedHobby.id);
+            if (ok) setIsShowDetailsReport(true);
+        } finally {
+            setIsWaiting(false);
+        }
     }
 
 
     async function handleTodayActivitiesReport() {
         setIsWaiting(true);
-        const ok = await onHobbyTimes();
-        setIsWaiting(false);
-        if (ok) setIsShowTodayActivities(true);
+        try {
+            await sleep(1000);
+            const ok = await onHobbyTimes();
+            if (ok) setIsShowTodayActivities(true);
+        } finally {
+            setIsWaiting(false);
+        }
     }
 
     return (
     <>
-        <Activity mode={isShowDetailsReport || isShowTodayActivities ? 'hidden' : 'visible'} >  
+        { isWaiting && (<Spinner name={t('statistics.loading')}/>)}
+        <Activity mode={isShowDetailsReport || isShowTodayActivities || isWaiting ? 'hidden' : 'visible'} >  
             <div className='columnContent'>
                 <label>{t('statistics.selectHobby')}</label>
                 <Select 

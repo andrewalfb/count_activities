@@ -1,4 +1,4 @@
-import { initDb, getDb } from './database';
+import { initDb } from './database';
 
 import express from 'express';
 const app = express();
@@ -11,11 +11,8 @@ import { router as authRouter } from './routers/auth';
 app.use(express.json());
 app.use(cookieParser());
 
-
 app.use(cors({
-  origin: [ 
-    "http://localhost:3000"
-  ],
+  origin: true,
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true

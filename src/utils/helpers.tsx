@@ -21,3 +21,7 @@
     export function isTodayLocal(timestamp: number): boolean {
         return timestamp >= startOfLocalDay(); 
     }
+
+export function sleep(milliseconds: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
