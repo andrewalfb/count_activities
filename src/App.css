@@ -1,9 +1,18 @@
 
+:root {
+  --active: #f59e0b;
+  --inactive: #6b7280;
+}
+
 /* App layout and navigation */
 .appLayout{
   display: flex;
   flex-direction: row;
   align-items: flex-start;
+
+  min-height: 100vh;
+
+  background: "#F6F7FB";
 }
 
 body { height: 275px; margin: 0; }
@@ -66,7 +75,7 @@ h1 {
 }
 
 .btnPrimary {
-  background: #f59e0b;
+  background: var(--active);
   color: #111827;
 }
 
@@ -100,7 +109,7 @@ h1 {
   height: 22px;
   border-radius: 50%;
   border: 3px solid rgba(15, 23, 42, 0.18);
-  border-top-color: #f59e0b;
+  border-top-color: var(--active);
   animation: spin 0.9s linear infinite;
 }
 
@@ -109,6 +118,23 @@ h1 {
     transform: rotate(360deg);
   }
 }
+
+/* overlay spinner */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.overlay .loadingWrap {
+  padding: 0; /* because overlay centers it */
+}
+
+
 
 /* Timer */
 
@@ -230,4 +256,80 @@ h1 {
   display: flex;
   justify-content: flex-end;
   gap: 8px; /* distance between buttons */
+}
+
+/* TopModal alert */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+
+  /* modal on top / centered horizontally */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 70px;
+
+  z-index: 9999;
+}
+
+.modalCard {
+  width: 100%;
+  max-width: 520px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  padding: 16px;
+}
+
+
+/* MenuItem */
+.menuItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 16px;
+  cursor: pointer;
+  background: transparent;
+  border-radius: 10px;
+}
+
+.menuItemActive {
+  background: rgba(245, 158, 11, 0.10);
+  color: var(--active);
+}
+
+.menuItemInactive {
+  color: var(--inactive);
+}
+
+.menuItemActiveBar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--active);
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.menuItemContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menuItemLabel {
+  font-weight: 600;
+}
+
+.menuItemLabelActive {
+  color: var(--active);
+}
+
+.menuItemLabelInactive {
+  color: var(--inactive);
 }

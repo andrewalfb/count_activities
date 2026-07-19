@@ -8,6 +8,7 @@ export type ApiConfig = {
         addTimes: () => string;
         addHobby: () => string;
         delete: (hobbyId: number) => string;
+        updateHobby: () => string;
     },
     auth: {
         init: () => string;
@@ -44,6 +45,7 @@ export const apiConfig: ApiConfig = {
             addTimes: () => `${baseUrl}/hobby/add_time`,
             addHobby: () => `${baseUrl}/hobby/add`,
             delete: (hobbyId) => `${baseUrl}/hobby/deleteHobby/${hobbyId}`,
+            updateHobby: () => `${baseUrl}/hobby/updateHobby`,
         },
         auth: {
             init: () => `${baseUrl}/auth/init`

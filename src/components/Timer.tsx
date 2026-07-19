@@ -11,17 +11,21 @@ interface Props {
     name: string,
     active: boolean,
     onStopClick: (value: number) => void,
-    onResetClick: () => void,
     onCloseClick: () => void
 }
 
- export default function Timer({ id, name, onStopClick, active, onResetClick, onCloseClick }: Props) {
+ export default function Timer({ 
+    id, name, 
+    onStopClick, 
+    active, 
+    onCloseClick 
+}: Props) {
     const [t] = useTranslation();
     const [ startTime, setStartTime ] = useState(0);
     const [ now, setNow ] = useState(0);
     const intervalRef = useRef<number | null>(null);
 
-    const [ isWorking, setIsWorking ] = useState(active);
+    const isWorking = active;
 
     const secondsPass = useMemo(() => {
         if (!startTime || !now) return 0;
@@ -53,11 +57,10 @@ interface Props {
     }, [isWorking]);
 
     function handleStart() {
-        setIsWorking(true)
+       
     }
 
     function handleStop() {
-        setIsWorking(false);
         if (intervalRef.current !== null) {
             clearInterval(intervalRef.current);
         }
@@ -66,19 +69,15 @@ interface Props {
 
 
     function handleReset() {
-        setIsWorking(false);
         if (intervalRef.current !== null) {
             const currentTime = Date.now();
             setStartTime(currentTime);
             setNow(currentTime); 
             clearInterval(intervalRef.current);
-            
-            onResetClick();
         }
     }
-
+    
     function handleClose() {
-        setIsWorking(false);
         onCloseClick();
     }
 
@@ -89,7 +88,7 @@ interface Props {
             <div className='btn-wrap'>
                 <Button title={isWorking ? t('timer.stop') : t('timer.start')} onClick={isWorking ? handleStop : handleStart} />
                 <Button title={t('timer.reset')} type={ButtonType.btnSecond} onClick={handleReset} />
-                <Button title={t('timer.close')} type={ButtonType.btnSecond} onClick={handleClose} />
+                <Button title={t('common.close')} type={ButtonType.btnSecond} onClick={handleClose} />
             </div>
             
         </div>

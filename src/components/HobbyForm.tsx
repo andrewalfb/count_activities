@@ -1,30 +1,31 @@
 import { useEffect, useState } from "react";
 import Button, { ButtonType } from "./Button";
 import { useTranslation } from "react-i18next";
+import { Hobby } from "../models/hobby";
 
 
 interface Props {
-    name?: string | null,
-    description?: string | null,
+    isUpdate: boolean,
+    needUpdateHobby?: Hobby | null,
     onSubmit: (name: string, description: string) => void,
     onCancel: () => void
 }
 
 
 export default function HobbyForm({ 
-  name = '', 
-  description = '', 
+  isUpdate,
+  needUpdateHobby,
   onSubmit,
   onCancel,
  }: Props) {
     const [t] = useTranslation();
-    const [hobby, setHobby] = useState(name ?? '');
-    const [hobbyDescription, setHobbyDescription] = useState(description ?? '');
+    const [hobby, setHobby] = useState(needUpdateHobby?.name ?? '');
+    const [hobbyDescription, setHobbyDescription] = useState(needUpdateHobby?.description ?? '');
 
     useEffect(() => {
-      setHobby(name ?? '');
-      setHobbyDescription(description ?? '');
-    }, [name, description]);
+      setHobby(needUpdateHobby?.name ?? '');
+      setHobbyDescription(needUpdateHobby?.description ?? '');
+    }, [needUpdateHobby?.name, needUpdateHobby?.description]);
 
     const onHandleSubmitForm = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -55,8 +56,8 @@ export default function HobbyForm({
       </div>
 
       <div className='hobbyForm__actions'>
-        <Button buttonType="submit" type={ButtonType.btnPrimary} onClick={() => {}} title={t('hobbyForm.save')} />
-        <Button type={ButtonType.btnSecond} onClick={onCancel} title={t('hobbyForm.cancel')} />
+        <Button buttonType="submit" type={ButtonType.btnPrimary} onClick={() => {}} title={ isUpdate ? t('common.update') : t('common.save')} />
+        <Button type={ButtonType.btnSecond} onClick={onCancel} title={t('common.cancel')} />
       </div>
     </form>
   );

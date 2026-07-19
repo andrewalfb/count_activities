@@ -1,11 +1,17 @@
 {
+    "common": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "update": "Update",
+        "close": "Close",
+        "delete": "Delete",
+        "add": "Add"
+    },
     "hobbyForm": {
         "nameLabel": "Name hobby",
         "namePlaceholder": "new hobby",
         "descriptionLabel": "Description hobby",
-        "descriptionPlaceholder": "description hobby",
-        "save": "Save",
-        "cancel": "Cancel"
+        "descriptionPlaceholder": "description hobby"
     },
     "app": {
         "en": "English",
@@ -27,9 +33,6 @@
         "addNewHobby": "Add new hobby:",
         "deleteHobby": "Delete hobby:",
         "editActivity": "Edit activity:",
-        "add": "Add",
-        "delete": "Delete",
-        "update": "Update",
         "saving": "Saving..."
     },
     "statistics": {
@@ -41,20 +44,16 @@
         "loading": "Loading...",
         "description": "Description",
         "spentTime": "Spent Time",
-        "name": "Name",
-        "close": "Close"
+        "name": "Name"
     },
     "timer": {
         "timeFor": "Time for {{name}}",
         "stop": "Stop",
         "start": "Start",
-        "reset": "Reset",
-        "close": "Close"
+        "reset": "Reset"
     },
     "hobbyWriteForm": {
-        "whatIsDone": "What is done",
-        "save": "Save",
-        "cancel": "Cancel"
+        "whatIsDone": "What is done"
     },
     "select": {
         "default": "Select..."

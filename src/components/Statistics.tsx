@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { formatTime } from "../utils/helpers";
 import Button, { ButtonType } from "./Button";
 import DataTable from "./DataTable";
-import { Hobby, HobbyDetailsTime, HobbyTime } from "../models/hobby";
+import { Hobby, HobbyTimeDetail, HobbyTime } from "../models/hobby";
 import Select from "./Select";
 import { Spinner } from "./Spinner";
 
@@ -13,7 +13,7 @@ import { sleep } from "../utils/helpers";
 
 interface Props {
     hobbies: Hobby[],
-    hobbyDetailsTime: HobbyDetailsTime[],
+    hobbyDetailsTime: HobbyTimeDetail[],
     onHobbyDetails: (hobbyId: number) => Promise<boolean>,
     hobbyTimes: HobbyTime[],
     onHobbyTimes: () => Promise<boolean>;
@@ -104,7 +104,7 @@ export function Statistics({
                     ]} 
                 />
                 <Button
-                    title={t('statistics.close')}
+                    title={t('common.close')}
                     type={ButtonType.btnSecond}
                     onClick={() => setIsShowDetailsReport(false)}
                 />                
@@ -124,7 +124,7 @@ export function Statistics({
                   ]}
                 />
                 <Button
-                    title={t('statistics.close')}
+                    title={t('common.close')}
                     type={ButtonType.btnSecond}
                     onClick={() => setIsShowTodayActivities(false)}
                 />   
