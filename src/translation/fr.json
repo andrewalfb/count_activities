@@ -1,11 +1,17 @@
-{
+{    
+    "common": {
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "update": "Mettre à jour",
+        "close": "Fermer",
+        "delete": "Supprimer",
+         "add": "Ajouter"
+    },
     "hobbyForm": {
         "nameLabel": "Nom du loisir",
         "namePlaceholder": "nouveau loisir",
         "descriptionLabel": "Description du loisir",
-        "descriptionPlaceholder": "description du loisir",
-        "save": "Enregistrer",
-        "cancel": "Annuler"
+        "descriptionPlaceholder": "description du loisir"
     },
     "app": {
         "en": "Anglais",
@@ -26,11 +32,7 @@
         "selectHobby": "Sélectionner un loisir :",
         "addNewHobby": "Ajouter un nouveau loisir :",
         "deleteHobby": "Supprimer le loisir :",
-        "editActivity": "Modifier l'activité :",
-        "add": "Ajouter",
-        "delete": "Supprimer",
-        "update": "Mettre à jour",
-        "saving": "Enregistrement..."
+        "editActivity": "Modifier l'activité :"
     },
     "statistics": {
         "selectHobby": "Sélectionner un loisir :",
@@ -41,20 +43,16 @@
         "loading": "Chargement...",
         "description": "Description",
         "spentTime": "Temps passé",
-        "name": "Nom",
-        "close": "Fermer"
+        "name": "Nom"
     },
     "timer": {
         "timeFor": "Temps pour {{name}}",
         "stop": "Arrêter",
         "start": "Démarrer",
-        "reset": "Réinitialiser",
-        "close": "Fermer"
+        "reset": "Réinitialiser"
     },
     "hobbyWriteForm": {
-        "whatIsDone": "Qu'est-ce qui a été fait",
-        "save": "Enregistrer",
-        "cancel": "Annuler"
+        "whatIsDone": "Qu'est-ce qui a été fait"
     },
     "select": {
         "default": "Sélectionner..."

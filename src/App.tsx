@@ -1,5 +1,5 @@
 
-import { Activity, useState, useEffect, useRef } from 'react';
+import { Activity, useState, useEffect, useRef, useReducer } from 'react';
 
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
@@ -7,11 +7,11 @@ import { useTranslation } from 'react-i18next';
 import './App.css';
 import { apiConfig } from './config/api'
 
-import Sidebar from './components/SideBar';
+import Sidebar from './components/Sidebar/SideBar';
 import Select from './components/Select';
 import Timer from './components/Timer';
 
-import { Hobby, HobbyTime, HobbyDetailsTime } from './models/hobby';
+import { Hobby, HobbyTime, HobbyTimeDetail } from './models/hobby';
 import Button, { ButtonType } from './components/Button';
 import FormAlert from './components/HobbyWriteForm';
 
@@ -19,36 +19,137 @@ import FormAlert from './components/HobbyWriteForm';
 import { Menu } from './models/menu';
 import { Editor } from './components/Editor';
 import { Statistics } from './components/Statistics';
+import TopModal from './components/Alerts/TopModal';
+import { Spinner } from './components/Spinner';
+import { sleep } from './utils/helpers';
 
 
-enum State {
-  starting = 0,
-  selected,
-  closeCount,
-  startCounting,
-  stopCounting,
+enum FlowStep {
+  Idle = 'idle',
+  Timer = 'timer',
+  Details = 'details',
+  Saving = 'saving',
+};
+
+
+  type ServerState = {
+    hobbies: Hobby[];
+    hobbyTimes: HobbyTime[];
+    hobbyTimeDetails: HobbyTimeDetail[];
+  };
+
+type State = {
+  flow: FlowStep,
+  selectedItemId: number | null,
+  currentSpentTime: number,
+  timerActive: boolean,
+  server: ServerState
 }
 
+type Action = 
+  | { type: 'MENU_SELECT_HOBBY'; id: number }
+  | { type: 'TIMER_START'}
+  | { type: 'TIMER_STOP'; spent: number }
+  | { type: 'TIMER_CANCEL'}
+  | { type: 'TIMER_RESET'}
+  | { type: 'SAVE_START' }
+  | { type: 'SAVE_SUCCESS'; hobbyTimes: HobbyTime[] }
+  | { type: 'SAVE_ERROR' }
+  | { type: 'CANCEL_DETAILS' }
+  | { type: 'LOAD_HOBBIES'; hobbies: Hobby[] }
+  | { type: 'ADD_HOBBY'; hobby: Hobby}
+  | { type: 'UPDATE_HOBBY', hobby: Hobby}
+  | { type: 'LOAD_DETAILS'; details: HobbyTimeDetail[] };
+  // | { type: 'SET_FLOW'; flow: FlowStep };
 
+
+
+  const initialState: State = {
+    flow: FlowStep.Idle,
+    selectedItemId: null,
+    currentSpentTime: 0,
+    timerActive: false,
+    server: { hobbies: [], hobbyTimes: [], hobbyTimeDetails: []},
+  };
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'MENU_SELECT_HOBBY':
+      return { ...state, selectedItemId: action.id };
+    case 'TIMER_START':
+      state.currentSpentTime = 0;
+      return { ...state, flow: FlowStep.Timer, timerActive: true}
+    case 'TIMER_STOP':
+      return { ...state, currentSpentTime: action.spent, flow: FlowStep.Details };
+    case 'TIMER_CANCEL':
+      return { ...state, flow: FlowStep.Idle}
+    case 'TIMER_RESET':
+      return { ...state, timerActive: false}
+    case 'SAVE_START':
+      return { ...state, flow: FlowStep.Saving };
+    case 'SAVE_SUCCESS':
+      return {
+        ...state,
+        flow: FlowStep.Idle,
+        currentSpentTime: 0,
+        server: { ...state.server, hobbyTimes: action.hobbyTimes },
+      };
+    case 'SAVE_ERROR':
+      return { ...state, flow: FlowStep.Details };
+    case 'CANCEL_DETAILS':
+      return { ...state, flow: FlowStep.Idle };
+    case 'LOAD_HOBBIES':
+      return { ...state, server: { ...state.server, hobbies: action.hobbies } };
+    case 'ADD_HOBBY': 
+      return { 
+        ...state, 
+        server: {
+          ...state.server,
+          hobbies: [...state.server.hobbies, action.hobby]  
+        }};
+    case 'UPDATE_HOBBY': 
+        return {
+          ...state,
+          server: {
+            ...state.server,
+            hobbies: state.server.hobbies.map(h => (h.id === action.hobby.id ? action.hobby : h))
+          }
+        };
+    case 'LOAD_DETAILS':
+      return { ...state, server: { ...state.server, hobbyTimeDetails: action.details } };
+    // case 'SET_FLOW':
+    //   return { ...state, flow: action.flow };
+    
+    default:
+      return state;
+  }
+}
 
 const api = axios.create({
   withCredentials: true
 });
 
+
+
+
 function App() {
   const [t,i18n] = useTranslation();
 
-  const [state, setState] = useState(State.starting);
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const isTimerActive = state.flow === FlowStep.Timer;
+  const isDetailsFormActive = state.flow === FlowStep.Details;
+  const isWaiting = state.flow === FlowStep.Saving;
+
+
   const [menu, setMenu] = useState<Menu>(Menu.main);
 
   const [isShowSidebar, setIsShowSidebar] = useState(true);
-  
-  const [dataHobbies, setDataHobbies] = useState<Hobby[]>([]);
-  const [selectedItem, setSelectedItem] =  useState<{id: number; name: string} | null>(null);
+  const [selectedHobbyId, setSelectedHobbyId] =  useState<number | null>(null);
 
-  const [dataHobbyTimes, setDataHobbyTimes] = useState<HobbyTime[]>([]);
-  const [currentSpentTime, setCurrentSpentTime] = useState(0);
-  const [dataHobbyDetailsTime, setDataHobbyDetailsTime] = useState<HobbyDetailsTime[]>([]);
+  const selectedItem = selectedHobbyId
+    ? state.server.hobbies.find(h => h.id === selectedHobbyId)
+    : undefined
 
   const initialized = useRef(false);
 
@@ -69,38 +170,42 @@ function App() {
 
   const loadHobbies = async () => {
     const res = await api.get(apiConfig.endpoints.hobby.list());
-    const hobbies = res.data.map(
-      (h: { id: number; name: string, description: string }) =>
-        new Hobby(h.id, h.name, h.description)
-    );
 
-    setDataHobbies(hobbies);
+    dispatch({type: 'LOAD_HOBBIES', hobbies: res.data})
   };
 
-  function lookupHobbies(id: number): Hobby | undefined {
-    const res = dataHobbies.find(item => {
-      return item.id === id
-    })
+  // Timer
+  function onHandleCancelHobbytime() {
+    dispatch({type: 'TIMER_CANCEL'});
+  };
 
-    return res
+  function handleTimerStart() {
+    dispatch({ type: 'TIMER_START'});
   }
 
-  function onStopClick(value: number) {
-    setCurrentSpentTime(value);  
-    setState(State.stopCounting);
-  }
+  function handleTimerStop(value: number) {
+    dispatch({type: 'TIMER_STOP', spent: value});
+  };
 
-  function onSaveHobbyTime(value: number, description: string | undefined) {
-    setState(State.selected);
+  function handleTimerCancel() {
+    dispatch({ type: 'CANCEL_DETAILS'});
+  } ;
+
+  function handleTimerReset() {
+    dispatch({ type: 'TIMER_RESET'})
+  };
+
+  async function onSaveHobbyTime(value: number, description: string | undefined) {
     if (!selectedItem) return;
-  
-    setCurrentSpentTime(0);
-
-    const json = {
+        const json = {
       hobby_id: selectedItem.id,
       spent_time: value,
       description: description
     };
+
+    dispatch({ type: 'SAVE_START'});
+
+    await sleep(1000);
 
     api.post(apiConfig.endpoints.hobby.addTimes(), json)
     .then((response) => {
@@ -108,23 +213,15 @@ function App() {
       api.get(apiConfig.endpoints.hobby.times())
         .then((response: { data: HobbyTime[] }) => {
         console.log(response);
-        const newHobbyTimes = response.data.map(item => new HobbyTime(item.name, item.description, item.spentTime, item.timestamp));
-
-        setDataHobbyTimes(newHobbyTimes);
+        dispatch({type: 'SAVE_SUCCESS', hobbyTimes: response.data});
       });
 
     }).catch(error => {
       console.error(`error add time: ${error}`);
+      dispatch({type: 'SAVE_ERROR'});
     });
   }
 
-  function onResetClick() {
-    setState(State.selected);
-  }
-
-  function onCloseClick() {
-    setState(State.selected);
-  } 
 
 
   async function handleSubmitForm(name: string, description: string): Promise<boolean> {
@@ -132,7 +229,7 @@ function App() {
     try {
       const response = await api.post(apiConfig.endpoints.hobby.addHobby(), json);
       const newHobby = new Hobby(response.data.id, name, description);
-      setDataHobbies(prev => [...prev, newHobby]);
+      dispatch({type: 'ADD_HOBBY', hobby: newHobby});
       
       return true;
     } catch(error) {
@@ -162,7 +259,7 @@ function App() {
         (item: {name: string, description: string, spentTime: number, timestamp: number}) => 
           new HobbyTime(item.name, item.description, item.spentTime, item.timestamp)
       )
-      setDataHobbyTimes(times);
+      dispatch({type: 'SAVE_SUCCESS', hobbyTimes: times});
 
       return true;
     } catch(error) {
@@ -173,18 +270,16 @@ function App() {
   }
 
   function handleSelect(value: number) {
-    const prop = lookupHobbies(value);
-    if (!prop) return;
-    setSelectedItem({id: value, name: prop.name});
-    setState(State.selected);
+    setSelectedHobbyId(value);
   } 
 
   async function handleShowDetails(hobbyId: number): Promise<boolean> {
     try {
       let response = await api.get(apiConfig.endpoints.hobby.details(), { params: { hobbyId: hobbyId } })
     
-      const newHobbyDetails = response.data.map((item: { description: string; spentTime: number; }) => new HobbyDetailsTime(item.description, item.spentTime));
-      setDataHobbyDetailsTime(newHobbyDetails);
+      const newHobbyDetails = response.data.map((item: { description: string; spentTime: number; }) => new HobbyTimeDetail(item.description, item.spentTime));
+
+      dispatch({type: 'LOAD_DETAILS', details: newHobbyDetails});
 
       return true
     } catch(error) {
@@ -194,10 +289,20 @@ function App() {
     }
   }
 
-  function handleUpdateHobby(updated: Hobby) {
-    setDataHobbies(prev =>
-      prev.map(h => (h.id === updated.id ? updated : h))
-    );
+  async function handleUpdateHobby(updated: Hobby): Promise<boolean> {
+
+    const json = {id: updated.id, name: updated.name, description: updated.description};
+    try {
+      let ok = await api.post(apiConfig.endpoints.hobby.updateHobby(), json);
+      console.log(`result update hobby: ${ok}`);
+      dispatch({type: 'UPDATE_HOBBY', hobby: updated});
+
+      return true;
+    } catch(error) {
+      console.error(`error update Hobby: ${error}`);
+      
+      return false;
+    }
   }
 
   function handleMenu(menu: Menu) {
@@ -212,10 +317,6 @@ function App() {
     setMenu(menu);
   };
 
-  function onHandleCancelHobbytime() {
-    setState(State.selected);
-  }
-
 
   const onClickLanguageChange = (e: any) => {
     const language = e.target.value;
@@ -225,12 +326,14 @@ function App() {
   return (
     <>
       <div className='appLayout'>
+
         <Activity mode={isShowSidebar ? 'visible' : 'hidden'}>
           <Sidebar onSelect={handleMenu}/>
         </Activity>
 
         <main>
-  
+          {isWaiting && (<Spinner name={t('statistics.loading')}/> )}
+
           <div className="topMenu">
             <button onClick={() => setIsShowSidebar(!isShowSidebar)}>
               {t('app.showMenu')}
@@ -240,7 +343,7 @@ function App() {
               <option value="fr" >{t('app.fr')}</option>
               <option value="hy" >{t('app.hy')}</option>
             </select>
-        </div>
+          </div>
 
           <div >
 
@@ -248,62 +351,78 @@ function App() {
              <div className='columnContent'>
                 <label>{t('app.whatWillDo')}</label>
                 <Select 
-                  items={dataHobbies.map(sel => ({ id: sel.id, name: sel.name }))}
+                  items={state.server.hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
                   onChange={ (value) => {handleSelect(value) }}
                 />
 
-                {state === State.selected && (
+                { selectedItem && (
                   <>
                     <label>{t('app.timerStartLabel', { name: selectedItem?.name ?? '' })}</label>
                     <Button
                       title={t('app.start')}
                       type={ButtonType.btnPrimary}
-                      onClick={() => {setState(State.startCounting)}}
+                      onClick={() => {dispatch({type: 'TIMER_START'})}}
                     />
                   </>
                 )}
 
-                { state === State.startCounting && selectedItem && (
+                {/* { isTimerActive && selectedItem && (
                   <Timer 
-                    id={selectedItem.id} 
                     name={selectedItem.name} 
-                    active={true}
-                    onStopClick={onStopClick} 
-                    onResetClick={onResetClick}
-                    onCloseClick={onCloseClick}
+                    active={state.timerActive}
+                    onStartClick={handleTimerStart}
+                    onStopClick={handleTimerStop} 
+                    onCancelClick={handleTimerCancel}
+                    onResetClick={handleTimerReset}
                   />
-               )}
+               )} */}
 
-                { state === State.stopCounting && (
+                  <TopModal
+                    open={isTimerActive}
+                    onClose={handleTimerCancel}
+                  >
+                  <Timer 
+                    name={selectedItem?.name ?? 'none'} 
+                    active={state.timerActive}
+                    onStartClick={handleTimerStart}
+                    onStopClick={handleTimerStop} 
+                    onCancelClick={handleTimerCancel}
+                    onResetClick={handleTimerReset}
+                  />
+                  </TopModal>
+  
+
+
+
+                <TopModal
+                  open={isDetailsFormActive}
+                  onClose={onHandleCancelHobbytime}
+                >
                   <FormAlert 
                     title={t('hobbyWriteForm.whatIsDone')}
-                    currentSpentTime={currentSpentTime}
+                    currentSpentTime={state.currentSpentTime}
                     onSave={ onSaveHobbyTime }
                     onCancel={ onHandleCancelHobbytime }
                   />
-                )}
-
+                </TopModal>
               </div>
           </Activity> 
           
           <Activity mode={menu === Menu.edit ? 'visible' : 'hidden'} >
             <Editor 
-              hobbies={dataHobbies} 
+              hobbies={state.server.hobbies} 
               onUpdateHobby={handleUpdateHobby} 
               onSubmitHobby={handleSubmitForm}
               onDeleteHobby={handleDelete}
             /> 
           </Activity>
 
-            
-
-
             <Activity mode={menu === Menu.statistics ? 'visible' : 'hidden'} >
               <Statistics 
-                hobbies={dataHobbies} 
-                hobbyDetailsTime={dataHobbyDetailsTime} 
+                hobbies={state.server.hobbies} 
+                hobbyDetailsTime={state.server.hobbyTimeDetails} 
                 onHobbyDetails={handleShowDetails} 
-                hobbyTimes={dataHobbyTimes}
+                hobbyTimes={state.server.hobbyTimes}
                 onHobbyTimes={loadTimes}
               />
             </Activity>

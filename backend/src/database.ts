@@ -168,3 +168,15 @@ export function deleteHobby(id: number) {
     const res = stmt.run(id);
     return res.changes;
 }
+
+export function updateHobby(id: number, name: string, description: string) {
+  const stmt = db.prepare(`
+    UPDATE hobbies 
+      SET name = ?,
+          description = ?
+    WHERE id = ?
+  `);
+
+  const res = stmt.run(name, description, id);
+  return res.changes;
+}

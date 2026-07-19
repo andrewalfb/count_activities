@@ -42,16 +42,15 @@ export default function FormAlert({
                     />
 
                     <div className='formActions'>
-                        <Button 
-                            buttonType='submit'
+                        <Button
                             type={ButtonType.btnPrimary}
                             onClick={() => { onSave(spentTime, description); }}
-                            title={t('hobbyWriteForm.save')}
+                            title={t('common.save')}
                         />
                         <Button 
                             type={ButtonType.btnSecond}
                             onClick={onCancel}
-                            title={t('hobbyWriteForm.cancel')}
+                            title={t('common.cancel')}
                         />
                     </div>
                 </div>

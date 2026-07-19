@@ -1,11 +1,17 @@
-{
+{    
+    "common": {
+        "save": "Պահպանել",
+        "cancel": "Չեղարկել",
+        "update": "Թարմացնել",
+        "close": "Փակել",
+        "delete": "Ջնջել",
+        "add": "Ավելացնել"
+    },
     "hobbyForm": {
         "nameLabel": "Հոբիի անունը",
         "namePlaceholder": "նոր հոբի",
         "descriptionLabel": "Հոբիի նկարագրությունը",
-        "descriptionPlaceholder": "նկարագրություն",
-        "save": "Պահպանել",
-        "cancel": "Չեղարկել"
+        "descriptionPlaceholder": "նկարագրություն"
     },
     "app": {
         "en": "Անգլերեն",
@@ -27,9 +33,6 @@
         "addNewHobby": "Ավելացնել նոր հոբի:",
         "deleteHobby": "Ջնջել հոբին:",
         "editActivity": "Խմբագրել գործողությունը:",
-        "add": "Ավելացնել",
-        "delete": "Ջնջել",
-        "update": "Թարմացնել",
         "saving": "Պահպանվում է..."
     },
     "statistics": {
@@ -41,20 +44,16 @@
         "loading": "Բեռնվում է...",
         "description": "Նկարագրություն",
         "spentTime": "Ծախսված ժամանակ",
-        "name": "Անուն",
-        "close": "Փակել"
+        "name": "Անուն"
     },
     "timer": {
         "timeFor": "{{name}}-ի համար",
         "stop": "Կանգնեցնել",
         "start": "Սկսել",
-        "reset": "Վերականգնել",
-        "close": "Փակել"
+        "reset": "Վերականգնել"
     },
     "hobbyWriteForm": {
-        "whatIsDone": "Ինչ է արվել",
-        "save": "Պահպանել",
-        "cancel": "Չեղարկել"
+        "whatIsDone": "Ինչ է արվել"
     },
     "select": {
         "default": "Ընտրել..."

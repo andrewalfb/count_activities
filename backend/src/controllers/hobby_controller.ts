@@ -1,5 +1,13 @@
 
-import { getHobbiesList, getSpentTimesToday, setHobby, setHobbyTime, getDetailsSpentTimes, deleteHobby } from '../database';
+import { 
+    getHobbiesList, 
+    getSpentTimesToday, 
+    setHobby, 
+    setHobbyTime, 
+    getDetailsSpentTimes, 
+    deleteHobby,
+    updateHobby
+ } from '../database';
 
 import type { Request, Response  } from 'express';
 
@@ -30,6 +38,17 @@ export const addHobby = function (req: Request, res: Response) {
         message: 'ok',
         id: id
     });
+}
+
+export const updateExistHobby = function(req: Request, res: Response) {
+    const count = updateHobby(req.body.id, req.body.name, req.body.description);
+    console.log(`update: ${count.toString}`);
+
+    if (count != 1) {
+        res.status(400).send('ERROR');
+    } else {
+        res.send('OK');
+    }
 }
 
 export const detailsSpentHobbyTimes = function(req: Request, res: Response) {

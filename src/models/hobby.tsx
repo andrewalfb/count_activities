@@ -24,7 +24,7 @@ export class HobbyTime {
   }
 }
 
-export class HobbyDetailsTime {
+export class HobbyTimeDetail {
   description: string
   spentTime: number
 

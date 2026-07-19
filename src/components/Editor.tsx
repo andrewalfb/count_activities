@@ -12,7 +12,7 @@ import { Spinner } from "./Spinner";
 
 interface Props {
     hobbies: Hobby[],
-    onUpdateHobby: (hobby: Hobby) => void,
+    onUpdateHobby: (hobby: Hobby) => Promise<boolean>,
     onSubmitHobby: (name: string, description: string) => Promise<boolean>;
     onDeleteHobby: (hobbyId: number) => Promise<boolean>;
 }
@@ -26,7 +26,7 @@ export function Editor({
     const [t] = useTranslation();
     const [selectedId, setSelectedId] =  useState<number | null>(null);
     const [isWaiting, setIsWaiting] = useState(false);
-    const [isOpenForm, setIsOpenForm] = useState(false);
+    const [hobbyForm, setHobbyForm] = useState({ isOpen: false, isUpdate: false});
 
     const selectedHobby = useMemo(
         () => hobbies.find(h => h.id === selectedId) ?? null,
@@ -37,30 +37,28 @@ export function Editor({
         setSelectedId(value);
     }
 
-    function updateHobby() {
-        if (!selectedHobby) return;
-
-        const update = new Hobby(selectedHobby.id, '', '');
-        onUpdateHobby(update);
-    }
-
     async function handleFormSubmit(name: string, description: string) {
         setIsWaiting(true);
-        await sleep(3000);
-        const ok = await onSubmitHobby(name, description);
-        setIsWaiting(false);
-        
-        if (ok) setIsOpenForm(false);
+        await sleep(1000);
+        if (hobbyForm.isUpdate) {
+            console.log(`modified: ${name} , ${description}`)
+            const ok = await onUpdateHobby(new Hobby(selectedHobby!.id, name, description));
+            if (ok) setHobbyForm({isOpen: false, isUpdate: false});
+        } else {
+            const ok = await onSubmitHobby(name, description);
+            if (ok) setHobbyForm({isOpen: false, isUpdate: false});
+        }
+        setIsWaiting(false);        
     }
 
     function handleFormCancel() {
-        setIsOpenForm(false);
+        setHobbyForm({isOpen: false, isUpdate: false});
     }
 
     async function handleDelete() {
         if (!selectedHobby) return;
         setIsWaiting(true);
-        await sleep(3000);
+        await sleep(1000);
         const ok = await onDeleteHobby(selectedHobby.id);
         setIsWaiting(false);
 
@@ -72,7 +70,7 @@ export function Editor({
         <>
             {isWaiting && (<Spinner name={t('editor.saving')}/>)}
 
-            <Activity mode={isOpenForm || isWaiting ? 'hidden' : 'visible'} >
+            <Activity mode={hobbyForm.isOpen || isWaiting ? 'hidden' : 'visible'} >
                 <div className='columnContent' >   
                     <label>{t('editor.selectHobby')}</label>
                     <Select 
@@ -82,34 +80,36 @@ export function Editor({
 
                     <label>{t('editor.addNewHobby')}</label>
                     <Button 
-                        title={t('editor.add')} 
+                        title={t('common.add')} 
                         type={ButtonType.btnSecond} 
-                        onClick={() => {setIsOpenForm(true)}} 
+                        onClick={() => {setHobbyForm({isOpen: true, isUpdate: false})}} 
                     />
                     {selectedId && (
                         <>
                             <label>{t('editor.deleteHobby')}</label>
                             <Button 
-                                    title={t('editor.delete')} 
-                                    type={ButtonType.btnSecond} 
-                                    onClick={handleDelete} 
-                                />
+                                title={t('common.delete')} 
+                                type={ButtonType.btnSecond} 
+                                onClick={handleDelete} 
+                            />
 
-                                <label>{t('editor.editActivity')}</label>
-                                <Button 
-                                    title={t('editor.update')} 
-                                    type={ButtonType.btnSecond} 
-                                    onClick={updateHobby} 
-                                />
-                        </>                    
+                            <label>{t('editor.editActivity')}</label>
+                            <Button 
+                                title={t('common.update')} 
+                                type={ButtonType.btnSecond} 
+                                onClick={() => {setHobbyForm({isOpen: true, isUpdate: true})}} 
+                            />
+                    </>                    
                     )}
 
                 </div>  
             </Activity>
 
-            {isOpenForm && (
+            {hobbyForm.isOpen && (
                 <div className='columnContent'>
                     <HobbyForm
+                        isUpdate={hobbyForm.isUpdate}
+                        needUpdateHobby={selectedHobby}
                         onSubmit={handleFormSubmit}
                         onCancel={handleFormCancel}
                     />

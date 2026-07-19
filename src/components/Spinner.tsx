@@ -11,9 +11,12 @@ export function Spinner({
     if (!name) name = t('spinner.title');
 
     return (
+      <div className="overlay">
         <div className="loadingWrap">
             <div className="spinner" />
             <span>{name}</span>
         </div>
+      </div>  
+
     )
 }

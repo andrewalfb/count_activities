@@ -5,23 +5,27 @@ import Button, { ButtonType }  from "./Button";
 import { formatTime } from "../utils/helpers";
 
 
-
 interface Props {
-    id: number,
     name: string,
     active: boolean,
+    onStartClick: () => void,
     onStopClick: (value: number) => void,
+    onCancelClick: () => void,
     onResetClick: () => void,
-    onCloseClick: () => void
 }
 
- export default function Timer({ id, name, onStopClick, active, onResetClick, onCloseClick }: Props) {
+ export default function Timer({ 
+    name, 
+    active, 
+    onStartClick,
+    onStopClick, 
+    onCancelClick: onCancelClick,
+    onResetClick,
+}: Props) {
     const [t] = useTranslation();
     const [ startTime, setStartTime ] = useState(0);
     const [ now, setNow ] = useState(0);
     const intervalRef = useRef<number | null>(null);
-
-    const [ isWorking, setIsWorking ] = useState(active);
 
     const secondsPass = useMemo(() => {
         if (!startTime || !now) return 0;
@@ -29,7 +33,7 @@ interface Props {
     }, [startTime, now]);
 
     useEffect(() => {
-        if (!isWorking) { 
+        if (!active) { 
             if (intervalRef.current !== null) {
                 clearInterval(intervalRef.current);
                 intervalRef.current = null;
@@ -50,14 +54,13 @@ interface Props {
             intervalRef.current = null;
             }
         };
-    }, [isWorking]);
+    }, [active]);
 
     function handleStart() {
-        setIsWorking(true)
+       onStartClick();
     }
 
     function handleStop() {
-        setIsWorking(false);
         if (intervalRef.current !== null) {
             clearInterval(intervalRef.current);
         }
@@ -66,20 +69,18 @@ interface Props {
 
 
     function handleReset() {
-        setIsWorking(false);
         if (intervalRef.current !== null) {
             const currentTime = Date.now();
             setStartTime(currentTime);
             setNow(currentTime); 
             clearInterval(intervalRef.current);
-            
-            onResetClick();
         }
-    }
 
+        onResetClick();
+    }
+    
     function handleClose() {
-        setIsWorking(false);
-        onCloseClick();
+        onCancelClick();
     }
 
     return (
@@ -87,9 +88,9 @@ interface Props {
             <div className='timeDisplay'>{formatTime(secondsPass)}</div>
             <div className='centerText'><i>{t('timer.timeFor', { name })}</i></div>
             <div className='btn-wrap'>
-                <Button title={isWorking ? t('timer.stop') : t('timer.start')} onClick={isWorking ? handleStop : handleStart} />
+                <Button title={active ? t('timer.stop') : t('timer.start')} onClick={active ? handleStop : handleStart} />
                 <Button title={t('timer.reset')} type={ButtonType.btnSecond} onClick={handleReset} />
-                <Button title={t('timer.close')} type={ButtonType.btnSecond} onClick={handleClose} />
+                <Button title={t('common.close')} type={ButtonType.btnSecond} onClick={handleClose} />
             </div>
             
         </div>
