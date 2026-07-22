@@ -2,7 +2,7 @@ import { Activity, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { formatTime } from "../utils/helpers";
-import Button, { ButtonType } from "./Button";
+import Button, { ButtonStyle } from "./Button";
 import DataTable from "./DataTable";
 import { Hobby, HobbyTimeDetail, HobbyTime } from "../models/hobby";
 import Select from "./Select";
@@ -70,31 +70,28 @@ export function Statistics({
     <>
         { isWaiting && (<Spinner name={t('statistics.loading')}/>)}
         <Activity mode={isShowDetailsReport || isShowTodayActivities || isWaiting ? 'hidden' : 'visible'} >  
-            <div className='columnContent'>
-                <label>{t('statistics.selectHobby')}</label>
-                <Select 
-                    items={hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
-                    onChange={ (value) => {handleSelect(value) }}
-                />
+            <label>{t('statistics.selectHobby')}</label>
+            <Select 
+                items={hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
+                onChange={ (value) => {handleSelect(value) }}
+            />
             { selectedId && (
                 <Button
                     title={t('statistics.timeReport')}
-                    type={ButtonType.btnSecond}
+                    style={ButtonStyle.Second}
                     onClick={handleDetailsReport}
                 />
             )}
 
             <Button
                 title={t('statistics.todayActivities')}
-                type={ButtonType.btnSecond}
+                style={ButtonStyle.Second}
                 onClick={handleTodayActivitiesReport}
             />
-
-            </div>
         </Activity>  
 
         <Activity mode={isShowDetailsReport ? 'visible' : 'hidden'} >
-            <div className="columnContent" >
+
                 <DataTable
                     title={t('statistics.detailsReport', { name: selectedHobby?.name ?? '' })}
                     items={hobbyDetailsTime}
@@ -105,15 +102,13 @@ export function Statistics({
                 />
                 <Button
                     title={t('common.close')}
-                    type={ButtonType.btnSecond}
+                    style={ButtonStyle.Second}
                     onClick={() => setIsShowDetailsReport(false)}
                 />                
-            </div>
 
         </Activity>
 
         <Activity mode={isShowTodayActivities ? 'visible' : 'hidden'}>
-              <div className='columnContent'>
                 <DataTable 
                   title={t('statistics.todayActivitiesReport')}
                   items={hobbyTimes}
@@ -125,10 +120,9 @@ export function Statistics({
                 />
                 <Button
                     title={t('common.close')}
-                    type={ButtonType.btnSecond}
+                    style={ButtonStyle.Second}
                     onClick={() => setIsShowTodayActivities(false)}
                 />   
-              </div>
         </Activity>
     </>
     );

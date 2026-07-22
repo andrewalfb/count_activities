@@ -15,12 +15,13 @@
     },
     "app": {
         "en": "English",
-        "fr": "French",
-        "hy": "Armenian",
+        "fr": "Français",
+        "hy": "Հայերեն",
         "showMenu": "Show menu",
         "whatWillDo": "What will do:",
         "start": "Start",
-        "timerStartLabel": "Start timer for {{name}}"
+        "timerStartLabel": "Start timer for {{name}}",
+        "selectHobby": "Select hobby"
     },
     "sidebar": {
         "menu": "Menu",

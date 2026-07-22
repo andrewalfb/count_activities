@@ -14,13 +14,14 @@
         "descriptionPlaceholder": "description du loisir"
     },
     "app": {
-        "en": "Anglais",
+        "en": "English",
         "fr": "Français",
-        "hy": "Arménien",
+        "hy": "Հայերեն",
         "showMenu": "Afficher le menu",
         "whatWillDo": "Que faire :",
         "start": "Démarrer",
-        "timerStartLabel": "Démarrer le minuteur pour {{name}}"
+        "timerStartLabel": "Démarrer le minuteur pour {{name}}",
+        "selectHobby": "Sélectionner un loisir "
     },
     "sidebar": {
         "menu": "Menu",

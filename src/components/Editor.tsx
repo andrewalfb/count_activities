@@ -2,7 +2,7 @@ import { Activity, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import Select from "./Select"
-import  Button, { ButtonType } from "./Button"
+import  Button, { ButtonStyle } from "./Button"
 import { Hobby } from "../models/hobby"
 import HobbyForm from "./HobbyForm";
 
@@ -70,18 +70,18 @@ export function Editor({
         <>
             {isWaiting && (<Spinner name={t('editor.saving')}/>)}
 
-            <Activity mode={hobbyForm.isOpen || isWaiting ? 'hidden' : 'visible'} >
-                <div className='columnContent' >   
-                    <label>{t('editor.selectHobby')}</label>
+            <Activity mode={hobbyForm.isOpen || isWaiting ? 'hidden' : 'visible'} > 
+                    {/* <label>{t('editor.selectHobby')}</label> */}
                     <Select 
                         items={hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
                         onChange={ (value) => {handleSelect(value) }}
+                        defaultTitle={t('app.selectHobby')}
                     />
 
                     <label>{t('editor.addNewHobby')}</label>
                     <Button 
                         title={t('common.add')} 
-                        type={ButtonType.btnSecond} 
+                        style={ButtonStyle.Second} 
                         onClick={() => {setHobbyForm({isOpen: true, isUpdate: false})}} 
                     />
                     {selectedId && (
@@ -89,20 +89,19 @@ export function Editor({
                             <label>{t('editor.deleteHobby')}</label>
                             <Button 
                                 title={t('common.delete')} 
-                                type={ButtonType.btnSecond} 
+                                style={ButtonStyle.Second} 
                                 onClick={handleDelete} 
                             />
 
                             <label>{t('editor.editActivity')}</label>
                             <Button 
                                 title={t('common.update')} 
-                                type={ButtonType.btnSecond} 
+                                style={ButtonStyle.Second} 
                                 onClick={() => {setHobbyForm({isOpen: true, isUpdate: true})}} 
                             />
                     </>                    
                     )}
 
-                </div>  
             </Activity>
 
             {hobbyForm.isOpen && (

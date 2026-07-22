@@ -1,5 +1,3 @@
-import * as React from "react";
-
 type MenuRowProps = {
   icon: React.FC<{ size?: number; color?: string }>;
   label: string;
@@ -24,7 +22,7 @@ export function MenuItem({
       <div className="menuItemContent">
         {/* Icon should use currentColor internally */}
         <Icon size={20} />
-        <div className="menuItemLabel">{label}</div>
+        <label>{label}</label>
       </div>
     </div>
   );

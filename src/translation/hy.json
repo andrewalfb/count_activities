@@ -14,13 +14,14 @@
         "descriptionPlaceholder": "նկարագրություն"
     },
     "app": {
-        "en": "Անգլերեն",
-        "fr": "Ֆրանսերեն",
+        "en": "English",
+        "fr": "Français",
         "hy": "Հայերեն",
         "showMenu": "Ցույց տալ մենյուն",
         "whatWillDo": "Ինչ կանի՞",
         "start": "Սկսել",
-        "timerStartLabel": "Սկսել ժմչփը՝ {{name}}"
+        "timerStartLabel": "Սկսել ժմչփը՝ {{name}}",
+        "selectHobby": "Ընտրել հոբի"
     },
     "sidebar": {
         "menu": "Մենյու",

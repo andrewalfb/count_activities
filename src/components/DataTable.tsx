@@ -20,15 +20,13 @@ export default function DataTable<T>({
 }: Props<T> ) {
 
   return (
+    <>
+      { title && (
+          <label className="dataTable__title">{title}</label> 
+      )}
+
     <table className="dataTable">
       <thead>
-        { title && (
-        <tr className="dataTable__titleRow">
-          <th className="dataTable__title" colSpan={columns.length}>
-            {title}
-          </th>
-        </tr>
-        )}
         <tr>
           {columns.map((c) => (
             <th key={c.header} className="dataTable__th">
@@ -50,5 +48,6 @@ export default function DataTable<T>({
         ))}
       </tbody>
     </table>
+  </>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import Button, { ButtonType }  from "./Button";
+import Button, { ButtonStyle }  from "./Button";
 
 import { formatTime } from "../utils/helpers";
 
@@ -19,7 +19,7 @@ interface Props {
     active, 
     onStartClick,
     onStopClick, 
-    onCancelClick: onCancelClick,
+    onCancelClick,
     onResetClick,
 }: Props) {
     const [t] = useTranslation();
@@ -89,8 +89,8 @@ interface Props {
             <div className='centerText'><i>{t('timer.timeFor', { name })}</i></div>
             <div className='btn-wrap'>
                 <Button title={active ? t('timer.stop') : t('timer.start')} onClick={active ? handleStop : handleStart} />
-                <Button title={t('timer.reset')} type={ButtonType.btnSecond} onClick={handleReset} />
-                <Button title={t('common.close')} type={ButtonType.btnSecond} onClick={handleClose} />
+                <Button title={t('timer.reset')} style={ButtonStyle.Second} onClick={handleReset} />
+                <Button title={t('common.close')} style={ButtonStyle.Second} onClick={handleClose} />
             </div>
             
         </div>

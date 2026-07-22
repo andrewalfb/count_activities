@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Button, { ButtonType } from "./Button";
+import Button, { ButtonStyle } from "./Button";
 import { useTranslation } from "react-i18next";
 import { Hobby } from "../models/hobby";
 
@@ -56,8 +56,8 @@ export default function HobbyForm({
       </div>
 
       <div className='hobbyForm__actions'>
-        <Button buttonType="submit" type={ButtonType.btnPrimary} onClick={() => {}} title={ isUpdate ? t('common.update') : t('common.save')} />
-        <Button type={ButtonType.btnSecond} onClick={onCancel} title={t('common.cancel')} />
+        <Button buttonType="submit" style={ButtonStyle.Primary} onClick={() => {}} title={ isUpdate ? t('common.update') : t('common.save')} />
+        <Button style={ButtonStyle.Second} onClick={onCancel} title={t('common.cancel')} />
       </div>
     </form>
   );

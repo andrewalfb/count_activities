@@ -12,7 +12,7 @@ import Select from './components/Select';
 import Timer from './components/Timer';
 
 import { Hobby, HobbyTime, HobbyTimeDetail } from './models/hobby';
-import Button, { ButtonType } from './components/Button';
+import Button, { ButtonStyle } from './components/Button';
 import FormAlert from './components/HobbyWriteForm';
 
 // models and type
@@ -77,14 +77,14 @@ function reducer(state: State, action: Action): State {
     case 'MENU_SELECT_HOBBY':
       return { ...state, selectedItemId: action.id };
     case 'TIMER_START':
-      state.currentSpentTime = 0;
-      return { ...state, flow: FlowStep.Timer, timerActive: true}
+      return { ...state, flow: FlowStep.Timer, timerActive: true, currentSpentTime: 0}
     case 'TIMER_STOP':
-      return { ...state, currentSpentTime: action.spent, flow: FlowStep.Details };
+      return { ...state, currentSpentTime: action.spent, flow: FlowStep.Details, timerActive: false
+      };
     case 'TIMER_CANCEL':
-      return { ...state, flow: FlowStep.Idle}
+      return { ...state, flow: FlowStep.Idle, timerActive: false}
     case 'TIMER_RESET':
-      return { ...state, timerActive: false}
+      return { ...state, timerActive: false, flow: FlowStep.Timer}
     case 'SAVE_START':
       return { ...state, flow: FlowStep.Saving };
     case 'SAVE_SUCCESS':
@@ -135,16 +135,13 @@ const api = axios.create({
 function App() {
   const [t,i18n] = useTranslation();
 
-  const [state, dispatch] = useReducer(reducer, initialState);
-
-  const isTimerActive = state.flow === FlowStep.Timer;
+  const [state, dispatch] = useReducer(reducer, initialState)
   const isDetailsFormActive = state.flow === FlowStep.Details;
   const isWaiting = state.flow === FlowStep.Saving;
 
 
   const [menu, setMenu] = useState<Menu>(Menu.main);
 
-  const [isShowSidebar, setIsShowSidebar] = useState(true);
   const [selectedHobbyId, setSelectedHobbyId] =  useState<number | null>(null);
 
   const selectedItem = selectedHobbyId
@@ -317,118 +314,119 @@ function App() {
     setMenu(menu);
   };
 
+ type Language = {
+  id: number,
+  lang: string,
+  name: string
+ }
 
-  const onClickLanguageChange = (e: any) => {
-    const language = e.target.value;
-    i18n.changeLanguage(language); //change the language
+  const languages: Language[] = [
+      { id: 1, lang: 'en', name: t('app.en') },
+      { id: 2, lang: 'fr', name: t('app.fr')},
+      { id: 3, lang: 'hy', name: t('app.hy')}
+    ];
+
+  function handleLanguageChange(value: number) {
+    const language = languages.find(h => value === h.id); 
+    i18n.changeLanguage(language?.lang); 
   }
 
   return (
     <>
       <div className='appLayout'>
+        <div className='sidebarSlot'>
+            <Sidebar onSelect={handleMenu}/>
+        </div>
+        {isWaiting && <Spinner name={t('statistics.loading')} />}
 
-        <Activity mode={isShowSidebar ? 'visible' : 'hidden'}>
-          <Sidebar onSelect={handleMenu}/>
-        </Activity>
+        <main className='contentMainArea'>
+          <div className="contentCard">
+            <div className="topMenu">
+                <div style={{marginLeft: 'auto'}}>
+                  <Select
+                    items={languages.map(language => ({id: language.id, name: language.name}))}
+                    active={languages[0].id}
+                    onChange={(value) => handleLanguageChange(value)}
+                  />                
+                </div>  
+            </div>
 
-        <main>
-          {isWaiting && (<Spinner name={t('statistics.loading')}/> )}
+            <div>
+              <Activity mode={menu === Menu.main ? 'visible' : 'hidden'}>
+                <div className="menuPage">
+                  <label>{t('app.whatWillDo')}</label>
+                  <Select
+                    items={state.server.hobbies.map((sel) => ({ id: sel.id, name: sel.name }))}
+                    onChange={(value) => {
+                      handleSelect(value);
+                    }}
+                    defaultTitle={t('app.selectHobby')}
+                  />
 
-          <div className="topMenu">
-            <button onClick={() => setIsShowSidebar(!isShowSidebar)}>
-              {t('app.showMenu')}
-            </button>
-            <select className="custom-select" onChange={onClickLanguageChange}>
-              <option value="en" >{t('app.en')}</option>
-              <option value="fr" >{t('app.fr')}</option>
-              <option value="hy" >{t('app.hy')}</option>
-            </select>
-          </div>
+                  {selectedItem && (
+                    <>
+                      <label>{t('app.timerStartLabel', { name: selectedItem?.name ?? '' })}</label>
+                      <Button
+                        title={t('app.start')}
+                        style={ButtonStyle.Primary}
+                        onClick={() => {
+                          dispatch({ type: 'TIMER_START' });
+                        }}
+                      />
+                    </>
+                  )}
 
-          <div >
-
-           <Activity mode={menu === Menu.main ? 'visible' : 'hidden'}>
-             <div className='columnContent'>
-                <label>{t('app.whatWillDo')}</label>
-                <Select 
-                  items={state.server.hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
-                  onChange={ (value) => {handleSelect(value) }}
-                />
-
-                { selectedItem && (
-                  <>
-                    <label>{t('app.timerStartLabel', { name: selectedItem?.name ?? '' })}</label>
-                    <Button
-                      title={t('app.start')}
-                      type={ButtonType.btnPrimary}
-                      onClick={() => {dispatch({type: 'TIMER_START'})}}
+                  <TopModal open={state.flow === FlowStep.Timer} onClose={handleTimerCancel}>
+                    <Timer
+                      name={selectedItem?.name ?? 'none'}
+                      active={state.timerActive}
+                      onStartClick={handleTimerStart}
+                      onStopClick={handleTimerStop}
+                      onCancelClick={handleTimerCancel}
+                      onResetClick={handleTimerReset}
                     />
-                  </>
-                )}
-
-                {/* { isTimerActive && selectedItem && (
-                  <Timer 
-                    name={selectedItem.name} 
-                    active={state.timerActive}
-                    onStartClick={handleTimerStart}
-                    onStopClick={handleTimerStop} 
-                    onCancelClick={handleTimerCancel}
-                    onResetClick={handleTimerReset}
-                  />
-               )} */}
-
-                  <TopModal
-                    open={isTimerActive}
-                    onClose={handleTimerCancel}
-                  >
-                  <Timer 
-                    name={selectedItem?.name ?? 'none'} 
-                    active={state.timerActive}
-                    onStartClick={handleTimerStart}
-                    onStopClick={handleTimerStop} 
-                    onCancelClick={handleTimerCancel}
-                    onResetClick={handleTimerReset}
-                  />
                   </TopModal>
-  
 
+                  <TopModal open={isDetailsFormActive} onClose={onHandleCancelHobbytime}>
+                    <FormAlert
+                      title={t('hobbyWriteForm.whatIsDone')}
+                      currentSpentTime={state.currentSpentTime}
+                      onSave={onSaveHobbyTime}
+                      onCancel={onHandleCancelHobbytime}
+                    />
+                  </TopModal>
+                </div>
+              </Activity>
 
-
-                <TopModal
-                  open={isDetailsFormActive}
-                  onClose={onHandleCancelHobbytime}
-                >
-                  <FormAlert 
-                    title={t('hobbyWriteForm.whatIsDone')}
-                    currentSpentTime={state.currentSpentTime}
-                    onSave={ onSaveHobbyTime }
-                    onCancel={ onHandleCancelHobbytime }
+              <Activity mode={menu === Menu.edit ? 'visible' : 'hidden'}>
+                <div className='menuPage'>
+                  <Editor
+                    hobbies={state.server.hobbies}
+                    onUpdateHobby={handleUpdateHobby}
+                    onSubmitHobby={handleSubmitForm}
+                    onDeleteHobby={handleDelete}
                   />
-                </TopModal>
-              </div>
-          </Activity> 
-          
-          <Activity mode={menu === Menu.edit ? 'visible' : 'hidden'} >
-            <Editor 
-              hobbies={state.server.hobbies} 
-              onUpdateHobby={handleUpdateHobby} 
-              onSubmitHobby={handleSubmitForm}
-              onDeleteHobby={handleDelete}
-            /> 
-          </Activity>
+                </div>
 
-            <Activity mode={menu === Menu.statistics ? 'visible' : 'hidden'} >
-              <Statistics 
-                hobbies={state.server.hobbies} 
-                hobbyDetailsTime={state.server.hobbyTimeDetails} 
-                onHobbyDetails={handleShowDetails} 
-                hobbyTimes={state.server.hobbyTimes}
-                onHobbyTimes={loadTimes}
-              />
-            </Activity>
+              </Activity>
 
+              <Activity mode={menu === Menu.statistics ? 'visible' : 'hidden'}>
+                <div className='menuPage'>
+                <Statistics
+                  hobbies={state.server.hobbies}
+                  hobbyDetailsTime={state.server.hobbyTimeDetails}
+                  onHobbyDetails={handleShowDetails}
+                  hobbyTimes={state.server.hobbyTimes}
+                  onHobbyTimes={loadTimes}
+                />                  
+                </div>
+
+              </Activity>
+            </div>
           </div>
         </main>
+
+
       </div>
     </>
   );

@@ -1,20 +1,20 @@
 
 
-export enum ButtonType {
-    btnPrimary = 0,
-    btnSecond
+export enum ButtonStyle {
+    Primary = 0,
+    Second
 }
 
 interface Props {
     title: string,
-    type?: ButtonType,
+    style?: ButtonStyle,
     onClick?: () => void,
     buttonType?: 'button' | 'submit' | 'reset'
 }
 
 export default function Button({ 
     title, 
-    type = ButtonType.btnPrimary, 
+    style: type = ButtonStyle.Primary, 
     onClick,
     buttonType = 'button'
  }: Props) {
@@ -22,7 +22,7 @@ export default function Button({
     return (
         <>
         <button
-            className={type === ButtonType.btnPrimary ? 'btn btnPrimary' : 'btn '} 
+            className={type === ButtonStyle.Primary ? 'btn btnPrimary' : 'btn'} 
             onClick={onClick}
             type={buttonType}
         >
