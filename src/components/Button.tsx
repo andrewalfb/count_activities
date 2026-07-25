@@ -10,24 +10,42 @@ interface Props {
     style?: ButtonStyle,
     onClick?: () => void,
     buttonType?: 'button' | 'submit' | 'reset'
+    enabled?: boolean
 }
 
 export default function Button({ 
     title, 
     style: type = ButtonStyle.Primary, 
     onClick,
-    buttonType = 'button'
+    buttonType = 'button',
+    enabled = true
  }: Props) {
 
     return (
         <>
-        <button
-            className={type === ButtonStyle.Primary ? 'btn btnPrimary' : 'btn'} 
-            onClick={onClick}
-            type={buttonType}
-        >
-            {title}
-        </button>
+        { !enabled && 
+           <button
+                className={type === ButtonStyle.Primary ? 'btn btnPrimary' : 'btn'} 
+                onClick={onClick}
+                type={buttonType}
+                disabled
+            >
+                {title}
+            </button>   
+        } 
+        { enabled && 
+            <button
+                className={type === ButtonStyle.Primary ? 'btn btnPrimary' : 'btn'} 
+                onClick={onClick}
+                type={buttonType}
+            >
+                {title}
+            </button>   
+        }                
         </>
+
+
+  
+        
     );
 }

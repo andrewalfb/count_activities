@@ -23,6 +23,11 @@ import TopModal from './components/Alerts/TopModal';
 import { Spinner } from './components/Spinner';
 import { sleep } from './utils/helpers';
 
+type Language = {
+id: number,
+lang: string,
+name: string
+}
 
 enum FlowStep {
   Idle = 'idle',
@@ -32,11 +37,11 @@ enum FlowStep {
 };
 
 
-  type ServerState = {
-    hobbies: Hobby[];
-    hobbyTimes: HobbyTime[];
-    hobbyTimeDetails: HobbyTimeDetail[];
-  };
+type ServerState = {
+  hobbies: Hobby[];
+  hobbyTimes: HobbyTime[];
+  hobbyTimeDetails: HobbyTimeDetail[];
+};
 
 type State = {
   flow: FlowStep,
@@ -314,12 +319,6 @@ function App() {
     setMenu(menu);
   };
 
- type Language = {
-  id: number,
-  lang: string,
-  name: string
- }
-
   const languages: Language[] = [
       { id: 1, lang: 'en', name: t('app.en') },
       { id: 2, lang: 'fr', name: t('app.fr')},
@@ -341,18 +340,30 @@ function App() {
 
         <main className='contentMainArea'>
           <div className="contentCard">
+
+            {/* TOP MENU /page aware/ */}
             <div className="topMenu">
+                {menu === Menu.main && (
+                    <Button
+                      title={t('app.start')}
+                      style={ButtonStyle.Primary}
+                      onClick={() => dispatch({ type: 'TIMER_START' })}
+                      enabled={selectedItem != null}
+                    />
+                )}
+                
                 <div style={{marginLeft: 'auto'}}>
                   <Select
                     items={languages.map(language => ({id: language.id, name: language.name}))}
                     active={languages[0].id}
                     onChange={(value) => handleLanguageChange(value)}
-                  />                
-                </div>  
+                  />      
+                </div>
             </div>
 
+                {/* PAGE CONTENT */}
             <div>
-              <Activity mode={menu === Menu.main ? 'visible' : 'hidden'}>
+              { menu === Menu.main && (
                 <div className="menuPage">
                   <label>{t('app.whatWillDo')}</label>
                   <Select
@@ -362,19 +373,6 @@ function App() {
                     }}
                     defaultTitle={t('app.selectHobby')}
                   />
-
-                  {selectedItem && (
-                    <>
-                      <label>{t('app.timerStartLabel', { name: selectedItem?.name ?? '' })}</label>
-                      <Button
-                        title={t('app.start')}
-                        style={ButtonStyle.Primary}
-                        onClick={() => {
-                          dispatch({ type: 'TIMER_START' });
-                        }}
-                      />
-                    </>
-                  )}
 
                   <TopModal open={state.flow === FlowStep.Timer} onClose={handleTimerCancel}>
                     <Timer
@@ -396,7 +394,9 @@ function App() {
                     />
                   </TopModal>
                 </div>
-              </Activity>
+              )}
+
+            
 
               <Activity mode={menu === Menu.edit ? 'visible' : 'hidden'}>
                 <div className='menuPage'>

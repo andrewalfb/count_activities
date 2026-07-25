@@ -120,10 +120,10 @@ nav {
   filter: brightness(0.98);
 }
 
-.btnGhost {
-  background: #f3f4f6;
-  color: #111827;
-  border-color: #e5e7eb;
+.btn:disabled {
+  color: #a9a8a8;
+  background: #ccc;
+  border-color: #9e9c9c;
 }
 
 .centerText {
