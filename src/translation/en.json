@@ -45,7 +45,8 @@
         "loading": "Loading...",
         "description": "Description",
         "spentTime": "Spent Time",
-        "name": "Name"
+        "name": "Name",
+        "hobby": "Hobby"
     },
     "timer": {
         "timeFor": "Time for {{name}}",

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 
@@ -10,9 +10,9 @@ type Item = {
 
 interface Props {
     items: Item[],
-    active?: number | null,
+    active: number | null,
     defaultTitle?: string | null,
-    onChange: (value: number) => void
+    onChange: (value: number | null) => void
 }
 
 
@@ -23,9 +23,13 @@ export default function Select({
   onChange 
 }: Props) {
   const [t] = useTranslation();  
-  const [selected, setSelected] = useState(active ?? 0)
+  const [selected, setSelected] = useState<number | "">(active ?? "");
 
-    const rows = items.map ((item) => (
+  useEffect(() => {
+    setSelected(active ?? '')
+  }, [ active ])
+
+  const rows = items.map ((item) => (
       <option key={item.id} value={item.id}>{item.name}</option>
   ));
   
@@ -35,17 +39,23 @@ export default function Select({
         className='custom-select'
         value={selected}
         onChange={(e) => {
-            const id = Number(e.target.value)
+          const raw = e.target.value;
+          if (raw === "") {
+            setSelected("");
+            onChange(null);
+            return;
+          }
+            const id = Number(raw)
             setSelected(id);
             onChange(id);
         }}
       >
-        { !active && (
-          <option value='' defaultValue=''>
-            { defaultTitle ? defaultTitle?.toString() : t('select.default')}
-          </option>            
+        { defaultTitle && (
+        <option value=''>
+        { defaultTitle ? defaultTitle?.toString() : t('select.default')}
+      </option>      
         )}
-
+      
         {rows}
       </select>
     </div>

@@ -1,70 +1,95 @@
-import { Activity, useMemo, useState } from "react";
+import { Activity, useEffect, useMemo, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
-import { formatTime } from "../utils/helpers";
-import Button, { ButtonStyle } from "./Button";
-import DataTable from "./DataTable";
-import { Hobby, HobbyTimeDetail, HobbyTime } from "../models/hobby";
-import Select from "./Select";
-import { Spinner } from "./Spinner";
+import { formatTime } from "../../utils/helpers";
+import Button, { ButtonStyle } from "../Button";
+import DataTable from "../DataTable";
+import { HobbyTimeDetail, HobbyTime } from "../../models/hobby";
+import Select from "../Select";
+import { Spinner } from "../Spinner";
+import { State } from "../../App";
+import { OnToolbarChange } from "../../types/toolbar";
 
 // only for debug
-import { sleep } from "../utils/helpers";
+import { sleep } from "../../utils/helpers";
 
 interface Props {
-    hobbies: Hobby[],
+    selectedHobbyId: number | null,
+    state: State,
+    onSelectedHobbyIdChange: React.Dispatch<React.SetStateAction<number | null>>,
+    onToolbarChange: OnToolbarChange,
     hobbyDetailsTime: HobbyTimeDetail[],
     onHobbyDetails: (hobbyId: number) => Promise<boolean>,
     hobbyTimes: HobbyTime[],
     onHobbyTimes: () => Promise<boolean>;
 }
 
-export function Statistics({
-    hobbies,
+export function StatisticsPage({
+    selectedHobbyId,
+    state,
+    onSelectedHobbyIdChange,
+    onToolbarChange,
     hobbyDetailsTime,
     onHobbyDetails,
     hobbyTimes,
     onHobbyTimes,
 }: Props) {
     const [t] = useTranslation();
-    const [selectedId, setSelectedId] =  useState<number | null>(null);
     const [isWaiting, setIsWaiting] = useState(false);
     
     const [isShowDetailsReport, setIsShowDetailsReport] = useState(false);
     const [isShowTodayActivities, setIsShowTodayActivities] = useState(false);
 
     const selectedHobby = useMemo(
-        () => hobbies.find(h => h.id === selectedId) ?? null,
-        [hobbies, selectedId]
+        () => state.server.hobbies.find(h => h.id === selectedHobbyId) ?? null,
+        [state.server.hobbies, selectedHobbyId]
     );
 
-    function handleSelect(value: number) {
-        setSelectedId(value);
-    }
-
-    async function handleDetailsReport() {
+    const handleDetailsReport = useCallback(async () => {
         if (!selectedHobby) return;
         setIsWaiting(true);
         try {
-            await sleep(3000);
+            await sleep(300);
             const ok = await onHobbyDetails(selectedHobby.id);
             if (ok) setIsShowDetailsReport(true);
         } finally {
             setIsWaiting(false);
         }
-    }
+    }, [ selectedHobby, onHobbyDetails, setIsShowDetailsReport, setIsWaiting ])
 
-
-    async function handleTodayActivitiesReport() {
+    const handleTodayActivitiesReport = useCallback( async () => {
         setIsWaiting(true);
         try {
-            await sleep(1000);
+            await sleep(300);
             const ok = await onHobbyTimes();
             if (ok) setIsShowTodayActivities(true);
         } finally {
             setIsWaiting(false);
-        }
-    }
+        }        
+    }, [setIsWaiting, onHobbyTimes, setIsShowTodayActivities ])
+
+
+    useEffect(() => {
+
+        onToolbarChange({
+            actions: [
+                {
+                    id: 'detailsReport',
+                    title: t('statistics.timeReport'),
+                    style: ButtonStyle.Primary,
+                    enabled: selectedHobbyId != null,
+                    onClick: () => handleDetailsReport()
+                },
+                {
+                    id: 'todayReport',
+                    title: t('statistics.todayActivities'),
+                    style: ButtonStyle.Primary,
+                    enabled: true,
+                    onClick: () => handleTodayActivitiesReport()                   
+                }
+            ]
+        })
+    }, [ selectedHobbyId, handleDetailsReport, handleTodayActivitiesReport, onToolbarChange, t ])
 
     return (
     <>
@@ -72,30 +97,20 @@ export function Statistics({
         <Activity mode={isShowDetailsReport || isShowTodayActivities || isWaiting ? 'hidden' : 'visible'} >  
             <label>{t('statistics.selectHobby')}</label>
             <Select 
-                items={hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
-                onChange={ (value) => {handleSelect(value) }}
-            />
-            { selectedId && (
-                <Button
-                    title={t('statistics.timeReport')}
-                    style={ButtonStyle.Second}
-                    onClick={handleDetailsReport}
-                />
-            )}
-
-            <Button
-                title={t('statistics.todayActivities')}
-                style={ButtonStyle.Second}
-                onClick={handleTodayActivitiesReport}
+                items={state.server.hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
+                active={selectedHobbyId}
+                defaultTitle={t('select.default')}
+                onChange={ (value) => {onSelectedHobbyIdChange(value) }}
             />
         </Activity>  
 
-        <Activity mode={isShowDetailsReport ? 'visible' : 'hidden'} >
-
+        { isShowDetailsReport && (
+            <>
                 <DataTable
                     title={t('statistics.detailsReport', { name: selectedHobby?.name ?? '' })}
                     items={hobbyDetailsTime}
                     columns={[
+                        { header: t('statistics.hobby'), cell: (h) => h.hobby },
                         { header: t('statistics.description'), cell: (h) => h.description },
                         { header: t('statistics.spentTime'), cell: (h) => formatTime(h.spentTime) }
                     ]} 
@@ -105,10 +120,12 @@ export function Statistics({
                     style={ButtonStyle.Second}
                     onClick={() => setIsShowDetailsReport(false)}
                 />                
+            </>
+        )}
 
-        </Activity>
 
-        <Activity mode={isShowTodayActivities ? 'visible' : 'hidden'}>
+        { isShowTodayActivities && (
+            <>
                 <DataTable 
                   title={t('statistics.todayActivitiesReport')}
                   items={hobbyTimes}
@@ -122,8 +139,9 @@ export function Statistics({
                     title={t('common.close')}
                     style={ButtonStyle.Second}
                     onClick={() => setIsShowTodayActivities(false)}
-                />   
-        </Activity>
+                />               
+            </>
+        )}
     </>
     );
 }

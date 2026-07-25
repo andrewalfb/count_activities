@@ -1,0 +1,129 @@
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+
+import Select from "../Select"
+import  { ButtonStyle } from "../Button"
+import { Hobby } from "../../models/hobby"
+import HobbyForm from "../HobbyForm";
+import { Spinner } from "../Spinner";
+import { State } from "../../App";
+import { OnToolbarChange } from "../../types/toolbar";
+
+// only for debug
+import { sleep } from "../../utils/helpers";
+
+
+interface Props {
+    selectedHobbyId: number | null,
+    state: State,
+    onSelectedHobbyIdChange: React.Dispatch<React.SetStateAction<number | null>>,
+    onToolbarChange: OnToolbarChange,
+    onUpdateHobby: (hobby: Hobby) => Promise<boolean>,
+    onSubmitHobby: (name: string, description: string) => Promise<boolean>;
+    onDeleteHobby: (hobbyId: number) => Promise<boolean>;
+}
+
+export function EditorPage({ 
+    selectedHobbyId,
+    state,
+    onSelectedHobbyIdChange,
+    onToolbarChange,
+    onUpdateHobby, 
+    onSubmitHobby, 
+    onDeleteHobby,
+}: Props) {
+    const [t] = useTranslation();
+
+    const [isWaiting, setIsWaiting] = useState(false);
+    const [hobbyForm, setHobbyForm] = useState({ isOpen: false, isUpdate: false});
+    const selectedHobby = useMemo(
+        () => state.server.hobbies.find(h => h.id === selectedHobbyId) ?? null,
+        [state.server.hobbies, selectedHobbyId]
+    );
+    
+    async function handleFormSubmit(name: string, description: string) {
+        setIsWaiting(true);
+        await sleep(1000);
+
+        if (hobbyForm.isUpdate) {
+            console.log(`modified: ${name} , ${description}`)
+            const ok = await onUpdateHobby(new Hobby(selectedHobby!.id, name, description));
+            if (ok) setHobbyForm({isOpen: false, isUpdate: false});
+        } else {
+            const ok = await onSubmitHobby(name, description);
+            if (ok) setHobbyForm({isOpen: false, isUpdate: false});
+        }
+        setIsWaiting(false);        
+    }
+
+    function handleFormCancel() {
+        setHobbyForm({isOpen: false, isUpdate: false});
+    }
+
+    const handleDelete = useCallback(async () => {
+        if (selectedHobbyId == null) return;
+
+        setIsWaiting(true);
+        const ok = await onDeleteHobby(selectedHobbyId);
+        setIsWaiting(false);
+        if (ok) onSelectedHobbyIdChange(null);
+    }, [ selectedHobbyId, onDeleteHobby, onSelectedHobbyIdChange ])
+
+
+    useEffect(() => {
+         const hasSelection = selectedHobbyId != null;
+
+        onToolbarChange({
+            actions: [
+                {
+                    id: 'add',
+                    title: t('common.add'),
+                    style: ButtonStyle.Primary,
+                    enabled: true,
+                    onClick: () => setHobbyForm({isOpen: true, isUpdate: false})
+                },
+                {
+                    id: 'edit',
+                    title: t('common.update'),
+                    style: ButtonStyle.Primary,
+                    enabled: hasSelection,
+                    onClick: () => setHobbyForm({isOpen: true, isUpdate: true})
+                },
+                {
+                    id: 'delete',
+                    title: t('common.delete'),
+                    style: ButtonStyle.Primary,
+                    enabled: hasSelection,
+                    onClick: () => handleDelete()
+                },
+            ]
+        });
+    }, [ selectedHobbyId, onToolbarChange, handleDelete, t ]);
+
+
+ 
+    return (
+        <div className='menuPage'>
+            {isWaiting && (<Spinner name={t('editor.saving')}/>)}
+
+                <Select 
+                    items={state.server.hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
+                    onChange={ (value) => {onSelectedHobbyIdChange(value) }}
+                    active={selectedHobbyId}
+                    defaultTitle={t('app.selectHobby')}
+                />                
+
+
+            {hobbyForm.isOpen && (
+                <div className='columnContent'>
+                    <HobbyForm
+                        isUpdate={hobbyForm.isUpdate}
+                        needUpdateHobby={selectedHobby}
+                        onSubmit={handleFormSubmit}
+                        onCancel={handleFormCancel}
+                    />
+                </div>
+            )}
+        </div>
+    )
+}

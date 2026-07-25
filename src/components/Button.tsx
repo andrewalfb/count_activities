@@ -22,30 +22,14 @@ export default function Button({
  }: Props) {
 
     return (
-        <>
-        { !enabled && 
            <button
                 className={type === ButtonStyle.Primary ? 'btn btnPrimary' : 'btn'} 
                 onClick={onClick}
                 type={buttonType}
-                disabled
+                disabled={!enabled}
             >
                 {title}
             </button>   
-        } 
-        { enabled && 
-            <button
-                className={type === ButtonStyle.Primary ? 'btn btnPrimary' : 'btn'} 
-                onClick={onClick}
-                type={buttonType}
-            >
-                {title}
-            </button>   
-        }                
-        </>
 
-
-  
-        
     );
 }

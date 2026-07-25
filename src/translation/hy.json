@@ -45,7 +45,8 @@
         "loading": "Բեռնվում է...",
         "description": "Նկարագրություն",
         "spentTime": "Ծախսված ժամանակ",
-        "name": "Անուն"
+        "name": "Անուն",
+        "hobby": "Հոբի"
     },
     "timer": {
         "timeFor": "{{name}}-ի համար",

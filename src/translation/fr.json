@@ -44,7 +44,8 @@
         "loading": "Chargement...",
         "description": "Description",
         "spentTime": "Temps passé",
-        "name": "Nom"
+        "name": "Nom",
+        "hobby": "Loisir"
     },
     "timer": {
         "timeFor": "Temps pour {{name}}",

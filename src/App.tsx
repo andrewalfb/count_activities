@@ -1,5 +1,5 @@
 
-import { Activity, useState, useEffect, useRef, useReducer } from 'react';
+import { useState, useEffect, useRef, useReducer, useCallback } from 'react';
 
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
@@ -12,16 +12,18 @@ import Select from './components/Select';
 import Timer from './components/Timer';
 
 import { Hobby, HobbyTime, HobbyTimeDetail } from './models/hobby';
-import Button, { ButtonStyle } from './components/Button';
+import Button from './components/Button';
 import FormAlert from './components/HobbyWriteForm';
 
 // models and type
 import { Menu } from './models/menu';
-import { Editor } from './components/Editor';
-import { Statistics } from './components/Statistics';
+import { EditorPage } from './components/pages/EditorPage';
+import { StatisticsPage } from './components/pages/StatisticsPage';
 import TopModal from './components/Alerts/TopModal';
 import { Spinner } from './components/Spinner';
 import { sleep } from './utils/helpers';
+import { ToolbarModel } from './types/toolbar';
+import { MainPage } from './components/pages/MainPage';
 
 type Language = {
 id: number,
@@ -43,7 +45,7 @@ type ServerState = {
   hobbyTimeDetails: HobbyTimeDetail[];
 };
 
-type State = {
+export type State = {
   flow: FlowStep,
   selectedItemId: number | null,
   currentSpentTime: number,
@@ -143,6 +145,18 @@ function App() {
   const [state, dispatch] = useReducer(reducer, initialState)
   const isDetailsFormActive = state.flow === FlowStep.Details;
   const isWaiting = state.flow === FlowStep.Saving;
+
+  const [toolbar, setToolbar] = useState<ToolbarModel>({ actions: [] });
+
+const onToolbarChange = useCallback((next: ToolbarModel) => {
+  setToolbar(prev => {
+
+    const prevKey = prev.actions.map(a => `${a.id}|${a.title}|${a.style}|${a.enabled}`).join(',');
+    const nextKey = next.actions.map(a => `${a.id}|${a.title}|${a.style}|${a.enabled}`).join(',');
+    if (prevKey === nextKey) return prev;
+    return next;
+  });
+}, []);
 
 
   const [menu, setMenu] = useState<Menu>(Menu.main);
@@ -271,15 +285,11 @@ function App() {
     }  
   }
 
-  function handleSelect(value: number) {
-    setSelectedHobbyId(value);
-  } 
-
   async function handleShowDetails(hobbyId: number): Promise<boolean> {
     try {
       let response = await api.get(apiConfig.endpoints.hobby.details(), { params: { hobbyId: hobbyId } })
     
-      const newHobbyDetails = response.data.map((item: { description: string; spentTime: number; }) => new HobbyTimeDetail(item.description, item.spentTime));
+      const newHobbyDetails = response.data.map((item: { hobby: string, description: string; spentTime: number; }) => new HobbyTimeDetail(item.hobby, item.description, item.spentTime));
 
       dispatch({type: 'LOAD_DETAILS', details: newHobbyDetails});
 
@@ -325,7 +335,9 @@ function App() {
       { id: 3, lang: 'hy', name: t('app.hy')}
     ];
 
-  function handleLanguageChange(value: number) {
+  function handleLanguageChange(value: number | null) {
+    if (!value) return;
+
     const language = languages.find(h => value === h.id); 
     i18n.changeLanguage(language?.lang); 
   }
@@ -343,19 +355,22 @@ function App() {
 
             {/* TOP MENU /page aware/ */}
             <div className="topMenu">
-                {menu === Menu.main && (
-                    <Button
-                      title={t('app.start')}
-                      style={ButtonStyle.Primary}
-                      onClick={() => dispatch({ type: 'TIMER_START' })}
-                      enabled={selectedItem != null}
-                    />
-                )}
-                
+            
+                { toolbar.actions.map(a => (
+                  <Button
+                    key={a.id}
+                    style={a.style}
+                    title={a.title}
+                    enabled={a.enabled}
+                    onClick={a.onClick}
+                  />))
+                }  
+
                 <div style={{marginLeft: 'auto'}}>
                   <Select
                     items={languages.map(language => ({id: language.id, name: language.name}))}
                     active={languages[0].id}
+                    defaultTitle={null}   
                     onChange={(value) => handleLanguageChange(value)}
                   />      
                 </div>
@@ -365,13 +380,13 @@ function App() {
             <div>
               { menu === Menu.main && (
                 <div className="menuPage">
-                  <label>{t('app.whatWillDo')}</label>
-                  <Select
-                    items={state.server.hobbies.map((sel) => ({ id: sel.id, name: sel.name }))}
-                    onChange={(value) => {
-                      handleSelect(value);
-                    }}
-                    defaultTitle={t('app.selectHobby')}
+                  <MainPage 
+                    selectedHobbyId={selectedHobbyId}
+                    state={state}
+                    onSelectedHobbyIdChange={setSelectedHobbyId}
+                    dispatch={dispatch}
+                    onToolbarChange={onToolbarChange}
+                    
                   />
 
                   <TopModal open={state.flow === FlowStep.Timer} onClose={handleTimerCancel}>
@@ -398,30 +413,39 @@ function App() {
 
             
 
-              <Activity mode={menu === Menu.edit ? 'visible' : 'hidden'}>
+              <div>
+                { menu === Menu.edit && (
                 <div className='menuPage'>
-                  <Editor
-                    hobbies={state.server.hobbies}
+                  <EditorPage
+                    selectedHobbyId={selectedHobbyId}
+                    state={state}
+                    onSelectedHobbyIdChange={setSelectedHobbyId}
+                    onToolbarChange={onToolbarChange}
                     onUpdateHobby={handleUpdateHobby}
                     onSubmitHobby={handleSubmitForm}
                     onDeleteHobby={handleDelete}
                   />
-                </div>
+                </div>                  
+                )}
+              </div>
 
-              </Activity>
 
-              <Activity mode={menu === Menu.statistics ? 'visible' : 'hidden'}>
+              <div>
+                { menu === Menu.statistics && (
                 <div className='menuPage'>
-                <Statistics
-                  hobbies={state.server.hobbies}
+                <StatisticsPage
+                  selectedHobbyId={selectedHobbyId}
+                  state={state}
+                  onSelectedHobbyIdChange={setSelectedHobbyId}
+                  onToolbarChange={onToolbarChange}
                   hobbyDetailsTime={state.server.hobbyTimeDetails}
                   onHobbyDetails={handleShowDetails}
                   hobbyTimes={state.server.hobbyTimes}
                   onHobbyTimes={loadTimes}
                 />                  
-                </div>
-
-              </Activity>
+                </div>                  
+                )}
+              </div>
             </div>
           </div>
         </main>
