@@ -16,7 +16,7 @@ import Button from './components/Button';
 import FormAlert from './components/HobbyWriteForm';
 
 // models and type
-import { Menu } from './models/menu';
+import { Menu, TopMenu } from './models/menu';
 import { EditorPage } from './components/pages/EditorPage';
 import { StatisticsPage } from './components/pages/StatisticsPage';
 import TopModal from './components/Alerts/TopModal';
@@ -33,6 +33,7 @@ name: string
 
 enum FlowStep {
   Idle = 'idle',
+  TopMenu = 'top_menu',
   Timer = 'timer',
   Details = 'details',
   Saving = 'saving',
@@ -50,24 +51,27 @@ export type State = {
   selectedItemId: number | null,
   currentSpentTime: number,
   timerActive: boolean,
-  server: ServerState
+  server: ServerState,
+  menu: Menu,
+  topMenu: TopMenu | null,
 }
 
-type Action = 
-  | { type: 'MENU_SELECT_HOBBY'; id: number }
+export type Action = 
+  | { type: 'MENU_SELECT_HOBBY'; id: number | null }
+  | { type: 'TOP_MENU_INSTALL', topMenu: TopMenu }
   | { type: 'TIMER_START'}
-  | { type: 'TIMER_STOP'; spent: number }
+  | { type: 'TIMER_STOP', spent: number }
   | { type: 'TIMER_CANCEL'}
   | { type: 'TIMER_RESET'}
   | { type: 'SAVE_START' }
-  | { type: 'SAVE_SUCCESS'; hobbyTimes: HobbyTime[] }
+  | { type: 'SAVE_SUCCESS', hobbyTimes: HobbyTime[] }
   | { type: 'SAVE_ERROR' }
   | { type: 'CANCEL_DETAILS' }
-  | { type: 'LOAD_HOBBIES'; hobbies: Hobby[] }
-  | { type: 'ADD_HOBBY'; hobby: Hobby}
+  | { type: 'LOAD_HOBBIES', hobbies: Hobby[] }
+  | { type: 'ADD_HOBBY', hobby: Hobby}
   | { type: 'UPDATE_HOBBY', hobby: Hobby}
-  | { type: 'LOAD_DETAILS'; details: HobbyTimeDetail[] };
-  // | { type: 'SET_FLOW'; flow: FlowStep };
+  | { type: 'LOAD_DETAILS', details: HobbyTimeDetail[] }
+  | { type: 'SET_MENU', menu: Menu };
 
 
 
@@ -77,12 +81,16 @@ type Action =
     currentSpentTime: 0,
     timerActive: false,
     server: { hobbies: [], hobbyTimes: [], hobbyTimeDetails: []},
+    menu: Menu.main, 
+    topMenu: null,
   };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'MENU_SELECT_HOBBY':
       return { ...state, selectedItemId: action.id };
+    case 'TOP_MENU_INSTALL':
+      return { ...state, topMenu: action.topMenu, flow: FlowStep.TopMenu };
     case 'TIMER_START':
       return { ...state, flow: FlowStep.Timer, timerActive: true, currentSpentTime: 0}
     case 'TIMER_STOP':
@@ -124,8 +132,8 @@ function reducer(state: State, action: Action): State {
         };
     case 'LOAD_DETAILS':
       return { ...state, server: { ...state.server, hobbyTimeDetails: action.details } };
-    // case 'SET_FLOW':
-    //   return { ...state, flow: action.flow };
+    case 'SET_MENU':
+      return { ...state, menu: action.menu };
     
     default:
       return state;
@@ -146,25 +154,8 @@ function App() {
   const isDetailsFormActive = state.flow === FlowStep.Details;
   const isWaiting = state.flow === FlowStep.Saving;
 
-  const [toolbar, setToolbar] = useState<ToolbarModel>({ actions: [] });
-
-const onToolbarChange = useCallback((next: ToolbarModel) => {
-  setToolbar(prev => {
-
-    const prevKey = prev.actions.map(a => `${a.id}|${a.title}|${a.style}|${a.enabled}`).join(',');
-    const nextKey = next.actions.map(a => `${a.id}|${a.title}|${a.style}|${a.enabled}`).join(',');
-    if (prevKey === nextKey) return prev;
-    return next;
-  });
-}, []);
-
-
-  const [menu, setMenu] = useState<Menu>(Menu.main);
-
-  const [selectedHobbyId, setSelectedHobbyId] =  useState<number | null>(null);
-
-  const selectedItem = selectedHobbyId
-    ? state.server.hobbies.find(h => h.id === selectedHobbyId)
+  const selectedItem = state.selectedItemId
+    ? state.server.hobbies.find(h => h.id === state.selectedItemId)
     : undefined
 
   const initialized = useRef(false);
@@ -183,6 +174,18 @@ const onToolbarChange = useCallback((next: ToolbarModel) => {
     bootstrap().catch(console.error);
 
   }, []);
+
+  function handleMenu(menu: Menu) {
+    switch (menu) {
+      case Menu.statistics:
+        //  handleShowDetails();
+         break;
+      default: 
+         break;
+    };
+   
+    dispatch({ type: 'SET_MENU', menu: menu});
+  };
 
   const loadHobbies = async () => {
     const res = await api.get(apiConfig.endpoints.hobby.list());
@@ -317,18 +320,6 @@ const onToolbarChange = useCallback((next: ToolbarModel) => {
     }
   }
 
-  function handleMenu(menu: Menu) {
-    switch (menu) {
-      case Menu.statistics:
-        //  handleShowDetails();
-         break;
-      default: 
-         break;
-    };
-   
-    setMenu(menu);
-  };
-
   const languages: Language[] = [
       { id: 1, lang: 'en', name: t('app.en') },
       { id: 2, lang: 'fr', name: t('app.fr')},
@@ -356,7 +347,7 @@ const onToolbarChange = useCallback((next: ToolbarModel) => {
             {/* TOP MENU /page aware/ */}
             <div className="topMenu">
             
-                { toolbar.actions.map(a => (
+                { state.topMenu?.actions.map(a => (
                   <Button
                     key={a.id}
                     style={a.style}
@@ -378,14 +369,12 @@ const onToolbarChange = useCallback((next: ToolbarModel) => {
 
                 {/* PAGE CONTENT */}
             <div>
-              { menu === Menu.main && (
+              { state.menu === Menu.main && (
                 <div className="menuPage">
                   <MainPage 
-                    selectedHobbyId={selectedHobbyId}
+                    selectedHobbyId={state.selectedItemId}
                     state={state}
-                    onSelectedHobbyIdChange={setSelectedHobbyId}
                     dispatch={dispatch}
-                    onToolbarChange={onToolbarChange}
                     
                   />
 
@@ -414,13 +403,12 @@ const onToolbarChange = useCallback((next: ToolbarModel) => {
             
 
               <div>
-                { menu === Menu.edit && (
+                { state.menu === Menu.edit && (
                 <div className='menuPage'>
                   <EditorPage
-                    selectedHobbyId={selectedHobbyId}
+                    selectedHobbyId={state.selectedItemId}
                     state={state}
-                    onSelectedHobbyIdChange={setSelectedHobbyId}
-                    onToolbarChange={onToolbarChange}
+                    dispatch={dispatch}
                     onUpdateHobby={handleUpdateHobby}
                     onSubmitHobby={handleSubmitForm}
                     onDeleteHobby={handleDelete}
@@ -431,13 +419,12 @@ const onToolbarChange = useCallback((next: ToolbarModel) => {
 
 
               <div>
-                { menu === Menu.statistics && (
+                { state.menu === Menu.statistics && (
                 <div className='menuPage'>
                 <StatisticsPage
-                  selectedHobbyId={selectedHobbyId}
+                  selectedHobbyId={state.selectedItemId}
                   state={state}
-                  onSelectedHobbyIdChange={setSelectedHobbyId}
-                  onToolbarChange={onToolbarChange}
+                  dispatch={dispatch}
                   hobbyDetailsTime={state.server.hobbyTimeDetails}
                   onHobbyDetails={handleShowDetails}
                   hobbyTimes={state.server.hobbyTimes}

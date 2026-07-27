@@ -7,17 +7,17 @@ import DataTable from "../DataTable";
 import { HobbyTimeDetail, HobbyTime } from "../../models/hobby";
 import Select from "../Select";
 import { Spinner } from "../Spinner";
-import { State } from "../../App";
+import { Action, State } from "../../App";
 import { OnToolbarChange } from "../../types/toolbar";
 
 // only for debug
 import { sleep } from "../../utils/helpers";
+import { Menu, TopMenu } from "../../models/menu";
 
 interface Props {
     selectedHobbyId: number | null,
     state: State,
-    onSelectedHobbyIdChange: React.Dispatch<React.SetStateAction<number | null>>,
-    onToolbarChange: OnToolbarChange,
+    dispatch: React.Dispatch<Action>
     hobbyDetailsTime: HobbyTimeDetail[],
     onHobbyDetails: (hobbyId: number) => Promise<boolean>,
     hobbyTimes: HobbyTime[],
@@ -27,8 +27,7 @@ interface Props {
 export function StatisticsPage({
     selectedHobbyId,
     state,
-    onSelectedHobbyIdChange,
-    onToolbarChange,
+    dispatch,
     hobbyDetailsTime,
     onHobbyDetails,
     hobbyTimes,
@@ -68,28 +67,27 @@ export function StatisticsPage({
         }        
     }, [setIsWaiting, onHobbyTimes, setIsShowTodayActivities ])
 
+    const topMenu = useMemo(() => new TopMenu(Menu.edit, [
+        {
+                id: 'detailsReport',
+                title: t('statistics.timeReport'),
+                style: ButtonStyle.Primary,
+                enabled: selectedHobbyId != null,
+                onClick: () => handleDetailsReport()
+            },
+            {
+                id: 'todayReport',
+                title: t('statistics.todayActivities'),
+                style: ButtonStyle.Primary,
+                enabled: true,
+                onClick: () => handleTodayActivitiesReport()                   
+            }
+        ]
+    ), [dispatch, t]);
 
     useEffect(() => {
-
-        onToolbarChange({
-            actions: [
-                {
-                    id: 'detailsReport',
-                    title: t('statistics.timeReport'),
-                    style: ButtonStyle.Primary,
-                    enabled: selectedHobbyId != null,
-                    onClick: () => handleDetailsReport()
-                },
-                {
-                    id: 'todayReport',
-                    title: t('statistics.todayActivities'),
-                    style: ButtonStyle.Primary,
-                    enabled: true,
-                    onClick: () => handleTodayActivitiesReport()                   
-                }
-            ]
-        })
-    }, [ selectedHobbyId, handleDetailsReport, handleTodayActivitiesReport, onToolbarChange, t ])
+        dispatch({ type: 'TOP_MENU_INSTALL', topMenu});
+    }, [dispatch, topMenu]);
 
     return (
     <>
@@ -100,7 +98,7 @@ export function StatisticsPage({
                 items={state.server.hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
                 active={selectedHobbyId}
                 defaultTitle={t('select.default')}
-                onChange={ (value) => {onSelectedHobbyIdChange(value) }}
+                onChange={ (value) => { dispatch({ type: 'MENU_SELECT_HOBBY', id: value}) }}
             />
         </Activity>  
 

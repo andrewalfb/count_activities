@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import Select from "../Select"
@@ -6,18 +6,18 @@ import  { ButtonStyle } from "../Button"
 import { Hobby } from "../../models/hobby"
 import HobbyForm from "../HobbyForm";
 import { Spinner } from "../Spinner";
-import { State } from "../../App";
-import { OnToolbarChange } from "../../types/toolbar";
+import { State, Action } from "../../App";
+import { Menu, TopMenu } from "../../models/menu";
 
 // only for debug
 import { sleep } from "../../utils/helpers";
 
 
+
 interface Props {
     selectedHobbyId: number | null,
     state: State,
-    onSelectedHobbyIdChange: React.Dispatch<React.SetStateAction<number | null>>,
-    onToolbarChange: OnToolbarChange,
+    dispatch: React.Dispatch<Action>,
     onUpdateHobby: (hobby: Hobby) => Promise<boolean>,
     onSubmitHobby: (name: string, description: string) => Promise<boolean>;
     onDeleteHobby: (hobbyId: number) => Promise<boolean>;
@@ -26,8 +26,7 @@ interface Props {
 export function EditorPage({ 
     selectedHobbyId,
     state,
-    onSelectedHobbyIdChange,
-    onToolbarChange,
+    dispatch,
     onUpdateHobby, 
     onSubmitHobby, 
     onDeleteHobby,
@@ -41,6 +40,36 @@ export function EditorPage({
         [state.server.hobbies, selectedHobbyId]
     );
     
+    const topMenu = useMemo(() => new TopMenu(Menu.edit, [
+            {
+                id: 'add',
+                title: t('common.add'),
+                style: ButtonStyle.Primary,
+                enabled: true,
+                onClick: () => setHobbyForm({isOpen: true, isUpdate: false})
+            },
+            {
+                id: 'edit',
+                title: t('common.update'),
+                style: ButtonStyle.Primary,
+                enabled: true,
+                onClick: () => setHobbyForm({isOpen: true, isUpdate: true})
+            },
+            {
+                id: 'delete',
+                title: t('common.delete'),
+                style: ButtonStyle.Primary,
+                enabled: true,
+                onClick: () => handleDelete()
+            },
+        ]
+    ), [dispatch, t]);
+
+    useEffect(() => {
+        dispatch({ type: 'TOP_MENU_INSTALL', topMenu: topMenu})
+
+    }, [dispatch, topMenu]);
+
     async function handleFormSubmit(name: string, description: string) {
         setIsWaiting(true);
         await sleep(1000);
@@ -66,39 +95,8 @@ export function EditorPage({
         setIsWaiting(true);
         const ok = await onDeleteHobby(selectedHobbyId);
         setIsWaiting(false);
-        if (ok) onSelectedHobbyIdChange(null);
-    }, [ selectedHobbyId, onDeleteHobby, onSelectedHobbyIdChange ])
-
-
-    useEffect(() => {
-         const hasSelection = selectedHobbyId != null;
-
-        onToolbarChange({
-            actions: [
-                {
-                    id: 'add',
-                    title: t('common.add'),
-                    style: ButtonStyle.Primary,
-                    enabled: true,
-                    onClick: () => setHobbyForm({isOpen: true, isUpdate: false})
-                },
-                {
-                    id: 'edit',
-                    title: t('common.update'),
-                    style: ButtonStyle.Primary,
-                    enabled: hasSelection,
-                    onClick: () => setHobbyForm({isOpen: true, isUpdate: true})
-                },
-                {
-                    id: 'delete',
-                    title: t('common.delete'),
-                    style: ButtonStyle.Primary,
-                    enabled: hasSelection,
-                    onClick: () => handleDelete()
-                },
-            ]
-        });
-    }, [ selectedHobbyId, onToolbarChange, handleDelete, t ]);
+        if (ok) dispatch({ type: 'MENU_SELECT_HOBBY', id: null});
+    }, [ selectedHobbyId, onDeleteHobby ])
 
 
  
@@ -108,7 +106,7 @@ export function EditorPage({
 
                 <Select 
                     items={state.server.hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
-                    onChange={ (value) => {onSelectedHobbyIdChange(value) }}
+                    onChange={ (value) => { dispatch({ type: 'MENU_SELECT_HOBBY', id: value })}}
                     active={selectedHobbyId}
                     defaultTitle={t('app.selectHobby')}
                 />                
