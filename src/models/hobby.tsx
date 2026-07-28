@@ -24,11 +24,13 @@ export class HobbyTime {
   }
 }
 
-export class HobbyDetailsTime {
+export class HobbyTimeDetail {
+  hobby: string
   description: string
   spentTime: number
 
-  constructor(description: string, spentTime: number) {
+  constructor(hobby: string, description: string, spentTime: number) {
+    this.hobby = hobby;
     this.description = description;
     this.spentTime = spentTime;
   }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import Button, { ButtonType } from "./Button";
+import Button, { ButtonStyle } from "./Button";
 
 interface Props {
     title: string,
@@ -42,16 +42,15 @@ export default function FormAlert({
                     />
 
                     <div className='formActions'>
-                        <Button 
-                            buttonType='submit'
-                            type={ButtonType.btnPrimary}
+                        <Button
+                            style={ButtonStyle.Primary}
                             onClick={() => { onSave(spentTime, description); }}
-                            title={t('hobbyWriteForm.save')}
+                            title={t('common.save')}
                         />
                         <Button 
-                            type={ButtonType.btnSecond}
+                            style={ButtonStyle.Second}
                             onClick={onCancel}
-                            title={t('hobbyWriteForm.cancel')}
+                            title={t('common.cancel')}
                         />
                     </div>
                 </div>

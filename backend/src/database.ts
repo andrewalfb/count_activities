@@ -1,3 +1,4 @@
+import { timeStamp } from 'node:console';
 import { DatabaseSync } from 'node:sqlite';
 
 // const db = new DatabaseSync(':memory:');
@@ -32,9 +33,11 @@ export function initDb() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT NOT NULL PRIMARY KEY,
-      name TEXT
+      name TEXT,
+      timestamp INTEGER NOT NULL DEFAULT (CAST(strftime('%s') AS INTEGER))
     );
   `);
+
 
  // Indexes
   db.exec(`CREATE INDEX IF NOT EXISTS idx_hobbies_userId ON hobbies(userId);`);
@@ -45,6 +48,8 @@ export function initDb() {
 // uses to migrate ON DELETE CASCADE
 function migration() {
   db.exec(`ALTER TABLE hobby_time RENAME TO hobby_time_old;`);
+  db.exec(`ALTER TABLE users ADD COLUMN timestamp INTEGER `)
+  db.exec(`UPDATE users SET timestamp = CAST(strftime('%s','now') AS INTEGER) WHERE timestamp IS NULL;`)
 
 db.exec(`
   CREATE TABLE hobby_time (
@@ -153,8 +158,14 @@ export function getSpentTimesToday(userId: string) {
 export function getDetailsSpentTimes(hobbyId: number) {
   const rows = db.prepare(`
       SELECT 
+        h.name AS hobby,
         ht.description AS description, 
-        ht.spentTime AS spentTime FROM hobby_time ht WHERE ht.hobbyId = ?
+        ht.spentTime AS spentTime 
+      FROM hobby_time ht
+      JOIN hobbies h ON ht.hobbyId = h.id 
+      WHERE ht.hobbyId = ? 
+        AND ht.timestamp >= CAST(strftime('%s','now','start of day') AS INTEGER)
+        AND ht.timestamp <  CAST(strftime('%s','now','start of day','+1 day') AS INTEGER)
     `).all(hobbyId);
 
   return rows;
@@ -167,4 +178,28 @@ export function deleteHobby(id: number) {
 
     const res = stmt.run(id);
     return res.changes;
+}
+
+export function updateHobby(id: number, name: string, description: string) {
+  const stmt = db.prepare(`
+    UPDATE hobbies 
+      SET name = ?,
+          description = ?
+    WHERE id = ?
+  `);
+
+  const res = stmt.run(name, description, id);
+  return res.changes;
+}
+
+export function getSpentTime(userId: string) {
+  const rows = db.prepare(`
+      SELECT 
+      	h.name AS hobby,
+      	date(ht.timestamp, 'unixepoch') AS timestamp_date,
+        ht.spentTime AS spentTime 
+      FROM hobby_time ht, hobbies h  WHERE ht.hobbyId = h.id AND h.userId  = ? GROUP by timestamp_date  
+  `).all(userId);
+
+  return rows;
 }

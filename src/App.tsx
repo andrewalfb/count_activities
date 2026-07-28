@@ -1,5 +1,5 @@
 
-import { Activity, useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useReducer } from 'react';
 
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
@@ -7,48 +7,155 @@ import { useTranslation } from 'react-i18next';
 import './App.css';
 import { apiConfig } from './config/api'
 
-import Sidebar from './components/SideBar';
+import Sidebar from './components/Sidebar/SideBar';
 import Select from './components/Select';
 import Timer from './components/Timer';
 
-import { Hobby, HobbyTime, HobbyDetailsTime } from './models/hobby';
-import Button, { ButtonType } from './components/Button';
+import { Hobby, HobbyTime, HobbyTimeDetail } from './models/hobby';
+import Button from './components/Button';
 import FormAlert from './components/HobbyWriteForm';
 
 // models and type
-import { Menu } from './models/menu';
-import { Editor } from './components/Editor';
-import { Statistics } from './components/Statistics';
+import { Menu, TopMenu } from './models/menu';
+import { EditorPage } from './components/pages/EditorPage';
+import { StatisticsPage } from './components/pages/StatisticsPage';
+import TopModal from './components/Alerts/TopModal';
+import { Spinner } from './components/Spinner';
+import { sleep } from './utils/helpers';
+import { MainPage } from './components/pages/MainPage';
 
-
-enum State {
-  starting = 0,
-  selected,
-  closeCount,
-  startCounting,
-  stopCounting,
+type Language = {
+id: number,
+lang: string,
+name: string
 }
 
+enum FlowStep {
+  Idle = 'idle',
+  TopMenu = 'top_menu',
+  Timer = 'timer',
+  Details = 'details',
+  Saving = 'saving',
+};
 
+
+type ServerState = {
+  hobbies: Hobby[];
+  hobbyTimes: HobbyTime[];
+  hobbyTimeDetails: HobbyTimeDetail[];
+};
+
+export type State = {
+  flow: FlowStep,
+  selectedItemId: number | null,
+  currentSpentTime: number,
+  timerActive: boolean,
+  server: ServerState,
+  menu: Menu,
+  topMenu: TopMenu | null,
+}
+
+export type Action = 
+  | { type: 'MENU_SELECT_HOBBY'; id: number | null }
+  | { type: 'TOP_MENU_INSTALL', topMenu: TopMenu }
+  | { type: 'TIMER_START'}
+  | { type: 'TIMER_STOP', spent: number }
+  | { type: 'TIMER_CANCEL'}
+  | { type: 'TIMER_RESET'}
+  | { type: 'SAVE_START' }
+  | { type: 'SAVE_SUCCESS', hobbyTimes: HobbyTime[] }
+  | { type: 'SAVE_ERROR' }
+  | { type: 'CANCEL_DETAILS' }
+  | { type: 'LOAD_HOBBIES', hobbies: Hobby[] }
+  | { type: 'ADD_HOBBY', hobby: Hobby}
+  | { type: 'UPDATE_HOBBY', hobby: Hobby}
+  | { type: 'LOAD_DETAILS', details: HobbyTimeDetail[] }
+  | { type: 'SET_MENU', menu: Menu };
+
+
+
+  const initialState: State = {
+    flow: FlowStep.Idle,
+    selectedItemId: null,
+    currentSpentTime: 0,
+    timerActive: false,
+    server: { hobbies: [], hobbyTimes: [], hobbyTimeDetails: []},
+    menu: Menu.main, 
+    topMenu: null,
+  };
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'MENU_SELECT_HOBBY':
+      return { ...state, selectedItemId: action.id, flow: FlowStep.Idle };
+    case 'TOP_MENU_INSTALL':
+      return { ...state, topMenu: action.topMenu, flow: FlowStep.TopMenu };
+    case 'TIMER_START':
+      return { ...state, flow: FlowStep.Timer, timerActive: true, currentSpentTime: 0}
+    case 'TIMER_STOP':
+      return { ...state, currentSpentTime: action.spent, flow: FlowStep.Details, timerActive: false
+      };
+    case 'TIMER_CANCEL':
+      return { ...state, flow: FlowStep.Idle, timerActive: false}
+    case 'TIMER_RESET':
+      return { ...state, timerActive: false, flow: FlowStep.Timer}
+    case 'SAVE_START':
+      return { ...state, flow: FlowStep.Saving };
+    case 'SAVE_SUCCESS':
+      return {
+        ...state,
+        flow: FlowStep.Idle,
+        currentSpentTime: 0,
+        server: { ...state.server, hobbyTimes: action.hobbyTimes },
+      };
+    case 'SAVE_ERROR':
+      return { ...state, flow: FlowStep.Details };
+    case 'CANCEL_DETAILS':
+      return { ...state, flow: FlowStep.Idle };
+    case 'LOAD_HOBBIES':
+      return { ...state, server: { ...state.server, hobbies: action.hobbies } };
+    case 'ADD_HOBBY': 
+      return { 
+        ...state, 
+        server: {
+          ...state.server,
+          hobbies: [...state.server.hobbies, action.hobby]  
+        }};
+    case 'UPDATE_HOBBY': 
+        return {
+          ...state,
+          server: {
+            ...state.server,
+            hobbies: state.server.hobbies.map(h => (h.id === action.hobby.id ? action.hobby : h))
+          }
+        };
+    case 'LOAD_DETAILS':
+      return { ...state, server: { ...state.server, hobbyTimeDetails: action.details } };
+    case 'SET_MENU':
+      return { ...state, menu: action.menu };
+    
+    default:
+      return state;
+  }
+}
 
 const api = axios.create({
   withCredentials: true
 });
 
+
+
+
 function App() {
   const [t,i18n] = useTranslation();
 
-  const [state, setState] = useState(State.starting);
-  const [menu, setMenu] = useState<Menu>(Menu.main);
+  const [state, dispatch] = useReducer(reducer, initialState)
+  const isDetailsFormActive = state.flow === FlowStep.Details;
+  const isWaiting = state.flow === FlowStep.Saving;
 
-  const [isShowSidebar, setIsShowSidebar] = useState(true);
-  
-  const [dataHobbies, setDataHobbies] = useState<Hobby[]>([]);
-  const [selectedItem, setSelectedItem] =  useState<{id: number; name: string} | null>(null);
-
-  const [dataHobbyTimes, setDataHobbyTimes] = useState<HobbyTime[]>([]);
-  const [currentSpentTime, setCurrentSpentTime] = useState(0);
-  const [dataHobbyDetailsTime, setDataHobbyDetailsTime] = useState<HobbyDetailsTime[]>([]);
+  const selectedItem = state.selectedItemId
+    ? state.server.hobbies.find(h => h.id === state.selectedItemId)
+    : undefined
 
   const initialized = useRef(false);
 
@@ -67,40 +174,56 @@ function App() {
 
   }, []);
 
-  const loadHobbies = async () => {
-    const res = await api.get(apiConfig.endpoints.hobby.list());
-    const hobbies = res.data.map(
-      (h: { id: number; name: string, description: string }) =>
-        new Hobby(h.id, h.name, h.description)
-    );
-
-    setDataHobbies(hobbies);
+  function handleMenu(menu: Menu) {
+    switch (menu) {
+      case Menu.statistics:
+        //  handleShowDetails();
+         break;
+      default: 
+         break;
+    };
+   
+    dispatch({ type: 'SET_MENU', menu: menu});
   };
 
-  function lookupHobbies(id: number): Hobby | undefined {
-    const res = dataHobbies.find(item => {
-      return item.id === id
-    })
+  const loadHobbies = async () => {
+    const res = await api.get(apiConfig.endpoints.hobby.list());
 
-    return res
+    dispatch({type: 'LOAD_HOBBIES', hobbies: res.data})
+  };
+
+  // Timer
+  function onHandleCancelHobbytime() {
+    dispatch({type: 'TIMER_CANCEL'});
+  };
+
+  function handleTimerStart() {
+    dispatch({ type: 'TIMER_START'});
   }
 
-  function onStopClick(value: number) {
-    setCurrentSpentTime(value);  
-    setState(State.stopCounting);
-  }
+  function handleTimerStop(value: number) {
+    dispatch({type: 'TIMER_STOP', spent: value});
+  };
 
-  function onSaveHobbyTime(value: number, description: string | undefined) {
-    setState(State.selected);
+  function handleTimerCancel() {
+    dispatch({ type: 'CANCEL_DETAILS'});
+  } ;
+
+  function handleTimerReset() {
+    dispatch({ type: 'TIMER_RESET'})
+  };
+
+  async function onSaveHobbyTime(value: number, description: string | undefined) {
     if (!selectedItem) return;
-  
-    setCurrentSpentTime(0);
-
-    const json = {
+        const json = {
       hobby_id: selectedItem.id,
       spent_time: value,
       description: description
     };
+
+    dispatch({ type: 'SAVE_START'});
+
+    await sleep(1000);
 
     api.post(apiConfig.endpoints.hobby.addTimes(), json)
     .then((response) => {
@@ -108,23 +231,15 @@ function App() {
       api.get(apiConfig.endpoints.hobby.times())
         .then((response: { data: HobbyTime[] }) => {
         console.log(response);
-        const newHobbyTimes = response.data.map(item => new HobbyTime(item.name, item.description, item.spentTime, item.timestamp));
-
-        setDataHobbyTimes(newHobbyTimes);
+        dispatch({type: 'SAVE_SUCCESS', hobbyTimes: response.data});
       });
 
     }).catch(error => {
       console.error(`error add time: ${error}`);
+      dispatch({type: 'SAVE_ERROR'});
     });
   }
 
-  function onResetClick() {
-    setState(State.selected);
-  }
-
-  function onCloseClick() {
-    setState(State.selected);
-  } 
 
 
   async function handleSubmitForm(name: string, description: string): Promise<boolean> {
@@ -132,7 +247,7 @@ function App() {
     try {
       const response = await api.post(apiConfig.endpoints.hobby.addHobby(), json);
       const newHobby = new Hobby(response.data.id, name, description);
-      setDataHobbies(prev => [...prev, newHobby]);
+      dispatch({type: 'ADD_HOBBY', hobby: newHobby});
       
       return true;
     } catch(error) {
@@ -162,7 +277,7 @@ function App() {
         (item: {name: string, description: string, spentTime: number, timestamp: number}) => 
           new HobbyTime(item.name, item.description, item.spentTime, item.timestamp)
       )
-      setDataHobbyTimes(times);
+      dispatch({type: 'SAVE_SUCCESS', hobbyTimes: times});
 
       return true;
     } catch(error) {
@@ -172,19 +287,13 @@ function App() {
     }  
   }
 
-  function handleSelect(value: number) {
-    const prop = lookupHobbies(value);
-    if (!prop) return;
-    setSelectedItem({id: value, name: prop.name});
-    setState(State.selected);
-  } 
-
   async function handleShowDetails(hobbyId: number): Promise<boolean> {
     try {
       let response = await api.get(apiConfig.endpoints.hobby.details(), { params: { hobbyId: hobbyId } })
     
-      const newHobbyDetails = response.data.map((item: { description: string; spentTime: number; }) => new HobbyDetailsTime(item.description, item.spentTime));
-      setDataHobbyDetailsTime(newHobbyDetails);
+      const newHobbyDetails = response.data.map((item: { hobby: string, description: string; spentTime: number; }) => new HobbyTimeDetail(item.hobby, item.description, item.spentTime));
+
+      dispatch({type: 'LOAD_DETAILS', details: newHobbyDetails});
 
       return true
     } catch(error) {
@@ -194,122 +303,140 @@ function App() {
     }
   }
 
-  function handleUpdateHobby(updated: Hobby) {
-    setDataHobbies(prev =>
-      prev.map(h => (h.id === updated.id ? updated : h))
-    );
+  async function handleUpdateHobby(updated: Hobby): Promise<boolean> {
+
+    const json = {id: updated.id, name: updated.name, description: updated.description};
+    try {
+      let ok = await api.post(apiConfig.endpoints.hobby.updateHobby(), json);
+      console.log(`result update hobby: ${ok}`);
+      dispatch({type: 'UPDATE_HOBBY', hobby: updated});
+
+      return true;
+    } catch(error) {
+      console.error(`error update Hobby: ${error}`);
+      
+      return false;
+    }
   }
 
-  function handleMenu(menu: Menu) {
-    switch (menu) {
-      case Menu.statistics:
-        //  handleShowDetails();
-         break;
-      default: 
-         break;
-    };
-   
-    setMenu(menu);
-  };
+  const languages: Language[] = [
+      { id: 1, lang: 'en', name: t('app.en') },
+      { id: 2, lang: 'fr', name: t('app.fr')},
+      { id: 3, lang: 'hy', name: t('app.hy')}
+    ];
 
-  function onHandleCancelHobbytime() {
-    setState(State.selected);
-  }
+  function handleLanguageChange(value: number | null) {
+    if (!value) return;
 
-
-  const onClickLanguageChange = (e: any) => {
-    const language = e.target.value;
-    i18n.changeLanguage(language); //change the language
+    const language = languages.find(h => value === h.id); 
+    i18n.changeLanguage(language?.lang); 
   }
 
   return (
     <>
       <div className='appLayout'>
-        <Activity mode={isShowSidebar ? 'visible' : 'hidden'}>
-          <Sidebar onSelect={handleMenu}/>
-        </Activity>
-
-        <main>
-  
-          <div className="topMenu">
-            <button onClick={() => setIsShowSidebar(!isShowSidebar)}>
-              {t('app.showMenu')}
-            </button>
-            <select className="custom-select" onChange={onClickLanguageChange}>
-              <option value="en" >{t('app.en')}</option>
-              <option value="fr" >{t('app.fr')}</option>
-              <option value="hy" >{t('app.hy')}</option>
-            </select>
+        <div className='sidebarSlot'>
+            <Sidebar onSelect={handleMenu}/>
         </div>
+        {isWaiting && <Spinner name={t('statistics.loading')} />}
 
-          <div >
+        <main className='contentMainArea'>
+          <div className="contentCard">
 
-           <Activity mode={menu === Menu.main ? 'visible' : 'hidden'}>
-             <div className='columnContent'>
-                <label>{t('app.whatWillDo')}</label>
-                <Select 
-                  items={dataHobbies.map(sel => ({ id: sel.id, name: sel.name }))}
-                  onChange={ (value) => {handleSelect(value) }}
-                />
+            {/* TOP MENU /page aware/ */}
+            <div className="topMenu">
+            
+                { state.topMenu?.actions.map(a => (
+                  <Button
+                    key={a.id}
+                    style={a.style}
+                    title={a.title}
+                    enabled={a.active || (state.selectedItemId != null)}
+                    onClick={a.onClick}
+                  />))
+                }  
 
-                {state === State.selected && (
-                  <>
-                    <label>{t('app.timerStartLabel', { name: selectedItem?.name ?? '' })}</label>
-                    <Button
-                      title={t('app.start')}
-                      type={ButtonType.btnPrimary}
-                      onClick={() => {setState(State.startCounting)}}
+                <div style={{marginLeft: 'auto'}}>
+                  <Select
+                    items={languages.map(language => ({id: language.id, name: language.name}))}
+                    active={languages[0].id}
+                    defaultTitle={null}   
+                    onChange={(value) => handleLanguageChange(value)}
+                  />      
+                </div>
+            </div>
+
+                {/* PAGE CONTENT */}
+            <div>
+              { state.menu === Menu.main && (
+                <div className="menuPage">
+                  <MainPage 
+                    selectedHobbyId={state.selectedItemId}
+                    state={state}
+                    dispatch={dispatch}
+                    
+                  />
+
+                  <TopModal open={state.flow === FlowStep.Timer} onClose={handleTimerCancel}>
+                    <Timer
+                      name={selectedItem?.name ?? 'none'}
+                      active={state.timerActive}
+                      onStartClick={handleTimerStart}
+                      onStopClick={handleTimerStop}
+                      onCancelClick={handleTimerCancel}
+                      onResetClick={handleTimerReset}
                     />
-                  </>
-                )}
+                  </TopModal>
 
-                { state === State.startCounting && selectedItem && (
-                  <Timer 
-                    id={selectedItem.id} 
-                    name={selectedItem.name} 
-                    active={true}
-                    onStopClick={onStopClick} 
-                    onResetClick={onResetClick}
-                    onCloseClick={onCloseClick}
-                  />
-               )}
-
-                { state === State.stopCounting && (
-                  <FormAlert 
-                    title={t('hobbyWriteForm.whatIsDone')}
-                    currentSpentTime={currentSpentTime}
-                    onSave={ onSaveHobbyTime }
-                    onCancel={ onHandleCancelHobbytime }
-                  />
-                )}
-
-              </div>
-          </Activity> 
-          
-          <Activity mode={menu === Menu.edit ? 'visible' : 'hidden'} >
-            <Editor 
-              hobbies={dataHobbies} 
-              onUpdateHobby={handleUpdateHobby} 
-              onSubmitHobby={handleSubmitForm}
-              onDeleteHobby={handleDelete}
-            /> 
-          </Activity>
+                  <TopModal open={isDetailsFormActive} onClose={onHandleCancelHobbytime}>
+                    <FormAlert
+                      title={t('hobbyWriteForm.whatIsDone')}
+                      currentSpentTime={state.currentSpentTime}
+                      onSave={onSaveHobbyTime}
+                      onCancel={onHandleCancelHobbytime}
+                    />
+                  </TopModal>
+                </div>
+              )}
 
             
 
+              <div>
+                { state.menu === Menu.edit && (
+                <div className='menuPage'>
+                  <EditorPage
+                    selectedHobbyId={state.selectedItemId}
+                    state={state}
+                    dispatch={dispatch}
+                    onUpdateHobby={handleUpdateHobby}
+                    onSubmitHobby={handleSubmitForm}
+                    onDeleteHobby={handleDelete}
+                  />
+                </div>                  
+                )}
+              </div>
 
-            <Activity mode={menu === Menu.statistics ? 'visible' : 'hidden'} >
-              <Statistics 
-                hobbies={dataHobbies} 
-                hobbyDetailsTime={dataHobbyDetailsTime} 
-                onHobbyDetails={handleShowDetails} 
-                hobbyTimes={dataHobbyTimes}
-                onHobbyTimes={loadTimes}
-              />
-            </Activity>
 
+              <div>
+                { state.menu === Menu.statistics && (
+                <div className='menuPage'>
+                <StatisticsPage
+                  selectedHobbyId={state.selectedItemId}
+                  state={state}
+                  dispatch={dispatch}
+                  hobbyDetailsTime={state.server.hobbyTimeDetails}
+                  onHobbyDetails={handleShowDetails}
+                  hobbyTimes={state.server.hobbyTimes}
+                  onHobbyTimes={loadTimes}
+                />                  
+                </div>                  
+                )}
+              </div>
+            </div>
           </div>
         </main>
+
+
       </div>
     </>
   );
