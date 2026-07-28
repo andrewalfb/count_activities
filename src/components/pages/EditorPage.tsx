@@ -45,21 +45,21 @@ export function EditorPage({
                 id: 'add',
                 title: t('common.add'),
                 style: ButtonStyle.Primary,
-                enabled: true,
+                active: true,
                 onClick: () => setHobbyForm({isOpen: true, isUpdate: false})
             },
             {
                 id: 'edit',
                 title: t('common.update'),
                 style: ButtonStyle.Primary,
-                enabled: true,
+                active: false,
                 onClick: () => setHobbyForm({isOpen: true, isUpdate: true})
             },
             {
                 id: 'delete',
                 title: t('common.delete'),
                 style: ButtonStyle.Primary,
-                enabled: true,
+                active: false,
                 onClick: () => handleDelete()
             },
         ]
@@ -101,26 +101,26 @@ export function EditorPage({
 
  
     return (
-        <div className='menuPage'>
-            {isWaiting && (<Spinner name={t('editor.saving')}/>)}
+        <div className='hobbyPage'>
+            { isWaiting && (<Spinner name={t('editor.saving')}/>)}
 
-                <Select 
-                    items={state.server.hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
-                    onChange={ (value) => { dispatch({ type: 'MENU_SELECT_HOBBY', id: value })}}
-                    active={selectedHobbyId}
-                    defaultTitle={t('app.selectHobby')}
-                />                
+            { !hobbyForm.isOpen &&
+            <Select 
+                items={state.server.hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
+                onChange={ (value) => { dispatch({ type: 'MENU_SELECT_HOBBY', id: value })}}
+                active={selectedHobbyId}
+                defaultTitle={t('app.selectHobby')}
+            />                 
+            }
+           
 
-
-            {hobbyForm.isOpen && (
-                <div className='columnContent'>
-                    <HobbyForm
-                        isUpdate={hobbyForm.isUpdate}
-                        needUpdateHobby={selectedHobby}
-                        onSubmit={handleFormSubmit}
-                        onCancel={handleFormCancel}
-                    />
-                </div>
+            { hobbyForm.isOpen && (
+                <HobbyForm
+                    isUpdate={hobbyForm.isUpdate}
+                    needUpdateHobby={hobbyForm.isUpdate ? selectedHobby : null}
+                    onSubmit={handleFormSubmit}
+                    onCancel={handleFormCancel}
+                />
             )}
         </div>
     )

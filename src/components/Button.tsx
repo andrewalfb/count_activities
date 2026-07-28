@@ -21,9 +21,13 @@ export default function Button({
     enabled = true
  }: Props) {
 
+    const className =
+    type === ButtonStyle.Primary ? 'btn btnPrimary' :
+    'btn btnSecondary';
+
     return (
            <button
-                className={type === ButtonStyle.Primary ? 'btn btnPrimary' : 'btn'} 
+                className={className} 
                 onClick={onClick}
                 type={buttonType}
                 disabled={!enabled}

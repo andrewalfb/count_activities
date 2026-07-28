@@ -47,7 +47,7 @@ export default function HobbyForm({
       </div>
 
       <div className='hobbyForm__row'>
-        <label style={{ minWidth: 160 }}>{t('hobbyForm.descriptionLabel')}</label>
+        <label>{t('hobbyForm.descriptionLabel')}</label>
         <input
           placeholder={t('hobbyForm.descriptionPlaceholder')}
           value={hobbyDescription}

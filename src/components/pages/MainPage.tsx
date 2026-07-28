@@ -24,7 +24,7 @@ export function MainPage({
     id: "start",
     title: t("app.start"),
     style: ButtonStyle.Primary,
-    enabled: true,
+    active: false,
     onClick: () => dispatch({ type: 'TIMER_START' })
   }]), [dispatch, t]);
 
@@ -33,9 +33,8 @@ export function MainPage({
   }, [dispatch, mainTopMenu]);
 
     return (
-        <div>
+        <div className="hobbyPage">
             <label>{t('app.whatWillDo')}</label>
-            <br/>
             <Select 
                 items={  state.server.hobbies.map(item => ({ id: item.id, name: item.name }))} 
                 defaultTitle={t('app.selectHobby')}

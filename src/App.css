@@ -2,11 +2,24 @@
 :root {
   --color-active: #f59e0b;
   --color-inactive: #6b7280;
-  --color-activeShadow: rgba(245, 158, 11, 0.10);
+
+  --color-activeShadow: rgba(245, 158, 11, 0.14);
+
   --color-background: #f6f7f9;
-  --color-border-active: var(--color-active);
-  --color-border-inactive: #000;
   --color-border: #e5e7eb;
+  --color-border-active: var(--color-active);
+
+  --radius: 14px;
+
+  --font-size-middle: 1.25rem;
+
+  /* Optional: make sizes consistent */
+  --btn-h: 44px;
+  --btn-x: 44px;
+
+  /* Transitions for a nicer feel */
+  --ease: 180ms cubic-bezier(.2,.8,.2,1);
+
 
   --font-size-small: 0.75rem; /* 12px */
   --font-size-base: 1rem; /* 16px, base */
@@ -98,38 +111,6 @@ nav {
   rotate: 180deg;
 }
 
-
-/* Button */
-.btn {
-  height: 44px;
-  padding: 0 44px;
-  border-radius: 12px;
-  border: 1px solid var(--color-border-inactive);
-  font-weight: 600;
-  cursor: pointer;
-  font-size: var(--font-size-middle);
-}
-
-.btnPrimary {
-  background: var(--color-activeShadow);
-  color: var(--color-active);
-  border: 1px solid var(--color-border-active);
-}
-
-.btnPrimary:hover {
-  filter: brightness(0.98);
-}
-
-.btn:disabled {
-  color: #a9a8a8;
-  background: #ccc;
-  border-color: #9e9c9c;
-}
-
-.centerText {
-  text-align: center;
-  margin: auto;
-}
 
 /* spinner loading or waiting */
 .loadingWrap {
@@ -241,6 +222,12 @@ nav {
   background: #f0f4ff;
 }
 
+/* hobbyPage?? */
+.hobbyPage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* replaces the <br/><br/><br/> */
+}
 
 
 /* add new hobby form */
@@ -249,18 +236,69 @@ nav {
   flex-direction: column;
   gap: 12px;
 
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 16px;
 }
-.hobbyForm__actions {
-  display: flex;
-  justify-content: flex-end; 
-  margin-top: auto; 
-  gap: 8px
-}
+
+/* rows */
 .hobbyForm__row {
   display: flex;
-  gap: 12px; 
+  gap: 12px;
   align-items: center;
 }
+
+.hobbyForm__row label {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* inputs (base) */
+.hobbyForm input {
+  height: 42px;
+  padding: 0 12px;
+
+  border-radius: var(--radius);
+  border: 1px solid #d1d5db;
+
+  background: #fff;
+  color: #4f5154;
+  font-size: var(--font-size-base);
+
+  outline: none;
+  transition: border-color var(--ease), box-shadow var(--ease);
+  flex: 1;
+}
+
+.hobbyForm input::placeholder {
+  color: var(--color-inactive);
+  opacity: 1;
+  font-size: 0.95rem;
+  font-family: inherit;
+  font-style: italic;
+}
+
+
+/* focus */
+.hobbyForm input:focus {
+  border-color: color-mix(in srgb, var(--color-active) 80%, #fff 20%);
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.18);
+}
+
+/* actions */
+.hobbyForm__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+  gap: 8px;
+}
+
+/* if your form is inside a flex container and you want breathing room */
+.hobbyForm__actions .btn {
+  height: 44px;
+}
+
 
 /* form adding details to hobby activities */
 .formCard {
@@ -366,7 +404,7 @@ nav {
   color: var(--color-inactive);
 }
 
-/* top meny new */
+/* top menu */
 .topMenu{
   display:flex;
   align-items:center;
@@ -424,15 +462,96 @@ nav {
 
 .custom-select-wrap{
   position: relative;
-  display: inline-block;
+  display: block; 
+  width: 100%;
+}
+
+.custom-select{
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 36px 8px 12px;
 }
 
 .custom-select-wrap::after{
   content: "▾";
   position: absolute;
-  right: 12px;
+  right: 16px;     
   top: 50%;
   transform: translateY(-50%);
   color: var(--color-active);
   pointer-events: none;
+}
+
+
+/* buttons */
+.btn{
+  height: var(--btn-h);
+  padding: 0 var(--btn-x);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+
+  font-weight: 650;
+  font-size: var(--font-size-middle);
+  letter-spacing: .01em;
+
+  background:#fff;
+  color:#111827;
+
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  transition: transform var(--ease), background-color var(--ease),
+              border-color var(--ease), box-shadow var(--ease),
+              color var(--ease), filter var(--ease), opacity var(--ease);
+}
+
+.btn:focus-visible{
+  outline: 3px solid rgba(245, 158, 11, 0.35);
+  outline-offset: 2px;
+}
+
+.btn:disabled{
+  cursor:not-allowed;
+  opacity:.6;
+  background:#f3f4f6;
+  border-color:#d1d5db;
+  color:#6b7280;
+  box-shadow:none;
+  transform:none;
+}
+
+/* Primary */
+.btnPrimary{
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.16), rgba(245, 158, 11, 0.10));
+  color: var(--color-active);
+  border-color: var(--color-border-active);
+  box-shadow: 0 10px 24px var(--color-activeShadow);
+}
+.btnPrimary:hover:not(:disabled){
+  filter: brightness(0.99);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(245, 158, 11, 0.20);
+}
+.btnPrimary:active:not(:disabled){
+  transform: translateY(0);
+  box-shadow: 0 10px 20px rgba(245, 158, 11, 0.16);
+}
+
+/* Secondary */
+.btnSecondary{
+  background:#fff;
+  color:#374151;
+  border-color:#d1d5db;
+}
+.btnSecondary:hover:not(:disabled){
+  background:#f9fafb;
+  border-color:#cbd5e1;
+  box-shadow: 0 10px 20px rgba(17, 24, 39, 0.06);
+  transform: translateY(-1px);
+}
+.btnSecondary:active:not(:disabled){
+  transform: translateY(0);
+  box-shadow: 0 8px 16px rgba(17, 24, 39, 0.06);
 }

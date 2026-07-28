@@ -88,7 +88,7 @@ export type Action =
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'MENU_SELECT_HOBBY':
-      return { ...state, selectedItemId: action.id };
+      return { ...state, selectedItemId: action.id, flow: FlowStep.Idle };
     case 'TOP_MENU_INSTALL':
       return { ...state, topMenu: action.topMenu, flow: FlowStep.TopMenu };
     case 'TIMER_START':
@@ -352,7 +352,7 @@ function App() {
                     key={a.id}
                     style={a.style}
                     title={a.title}
-                    enabled={a.enabled}
+                    enabled={a.active || (state.selectedItemId != null)}
                     onClick={a.onClick}
                   />))
                 }  

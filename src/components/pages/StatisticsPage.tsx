@@ -72,14 +72,14 @@ export function StatisticsPage({
                 id: 'detailsReport',
                 title: t('statistics.timeReport'),
                 style: ButtonStyle.Primary,
-                enabled: selectedHobbyId != null,
+                active: false,
                 onClick: () => handleDetailsReport()
             },
             {
                 id: 'todayReport',
                 title: t('statistics.todayActivities'),
                 style: ButtonStyle.Primary,
-                enabled: true,
+                active: true,
                 onClick: () => handleTodayActivitiesReport()                   
             }
         ]
@@ -90,17 +90,19 @@ export function StatisticsPage({
     }, [dispatch, topMenu]);
 
     return (
-    <>
+    <div className="hobbyPage">
         { isWaiting && (<Spinner name={t('statistics.loading')}/>)}
-        <Activity mode={isShowDetailsReport || isShowTodayActivities || isWaiting ? 'hidden' : 'visible'} >  
-            <label>{t('statistics.selectHobby')}</label>
+
+        { !(isShowDetailsReport || isShowTodayActivities || isWaiting) && (
             <Select 
                 items={state.server.hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
                 active={selectedHobbyId}
                 defaultTitle={t('select.default')}
                 onChange={ (value) => { dispatch({ type: 'MENU_SELECT_HOBBY', id: value}) }}
             />
-        </Activity>  
+        )} 
+
+
 
         { isShowDetailsReport && (
             <>
@@ -140,6 +142,7 @@ export function StatisticsPage({
                 />               
             </>
         )}
-    </>
+        
+    </div>
     );
 }

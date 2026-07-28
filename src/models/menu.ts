@@ -11,7 +11,7 @@ export enum Menu {
   id: string;
   title: string;
   style?: ButtonStyle;
-  enabled?: boolean;
+  active: boolean;
   onClick: () => void;
 };
 
