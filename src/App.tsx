@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef, useReducer, useCallback } from 'react';
+import { useEffect, useRef, useReducer } from 'react';
 
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
@@ -22,7 +22,6 @@ import { StatisticsPage } from './components/pages/StatisticsPage';
 import TopModal from './components/Alerts/TopModal';
 import { Spinner } from './components/Spinner';
 import { sleep } from './utils/helpers';
-import { ToolbarModel } from './types/toolbar';
 import { MainPage } from './components/pages/MainPage';
 
 type Language = {

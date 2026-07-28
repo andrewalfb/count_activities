@@ -1,4 +1,4 @@
-import { Activity, useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import { formatTime } from "../../utils/helpers";
@@ -8,10 +8,9 @@ import { HobbyTimeDetail, HobbyTime } from "../../models/hobby";
 import Select from "../Select";
 import { Spinner } from "../Spinner";
 import { Action, State } from "../../App";
-import { OnToolbarChange } from "../../types/toolbar";
 
 // only for debug
-import { sleep } from "../../utils/helpers";
+// import { sleep } from "../../utils/helpers";    
 import { Menu, TopMenu } from "../../models/menu";
 
 interface Props {
@@ -48,7 +47,7 @@ export function StatisticsPage({
         if (!selectedHobby) return;
         setIsWaiting(true);
         try {
-            await sleep(300);
+            // await sleep(300);
             const ok = await onHobbyDetails(selectedHobby.id);
             if (ok) setIsShowDetailsReport(true);
         } finally {
@@ -59,7 +58,7 @@ export function StatisticsPage({
     const handleTodayActivitiesReport = useCallback( async () => {
         setIsWaiting(true);
         try {
-            await sleep(300);
+            // await sleep(300);
             const ok = await onHobbyTimes();
             if (ok) setIsShowTodayActivities(true);
         } finally {
@@ -83,7 +82,7 @@ export function StatisticsPage({
                 onClick: () => handleTodayActivitiesReport()                   
             }
         ]
-    ), [dispatch, t]);
+    ), [ handleDetailsReport, handleTodayActivitiesReport, t]);
 
     useEffect(() => {
         dispatch({ type: 'TOP_MENU_INSTALL', topMenu});

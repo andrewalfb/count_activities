@@ -10,7 +10,7 @@ import { State, Action } from "../../App";
 import { Menu, TopMenu } from "../../models/menu";
 
 // only for debug
-import { sleep } from "../../utils/helpers";
+// import { sleep } from "../../utils/helpers";
 
 
 
@@ -39,6 +39,21 @@ export function EditorPage({
         () => state.server.hobbies.find(h => h.id === selectedHobbyId) ?? null,
         [state.server.hobbies, selectedHobbyId]
     );
+
+
+    function handleFormCancel() {
+        setHobbyForm({isOpen: false, isUpdate: false});
+    }
+
+    const handleDelete = useCallback(async () => {
+        if (selectedHobbyId == null) return;
+
+        setIsWaiting(true);
+        const ok = await onDeleteHobby(selectedHobbyId);
+        setIsWaiting(false);
+        if (ok) dispatch({ type: 'MENU_SELECT_HOBBY', id: null});
+    }, [ selectedHobbyId, onDeleteHobby, dispatch ])
+
     
     const topMenu = useMemo(() => new TopMenu(Menu.edit, [
             {
@@ -63,7 +78,7 @@ export function EditorPage({
                 onClick: () => handleDelete()
             },
         ]
-    ), [dispatch, t]);
+    ), [ handleDelete, t]);
 
     useEffect(() => {
         dispatch({ type: 'TOP_MENU_INSTALL', topMenu: topMenu})
@@ -72,7 +87,7 @@ export function EditorPage({
 
     async function handleFormSubmit(name: string, description: string) {
         setIsWaiting(true);
-        await sleep(1000);
+        // await sleep(500);
 
         if (hobbyForm.isUpdate) {
             console.log(`modified: ${name} , ${description}`)
@@ -84,21 +99,6 @@ export function EditorPage({
         }
         setIsWaiting(false);        
     }
-
-    function handleFormCancel() {
-        setHobbyForm({isOpen: false, isUpdate: false});
-    }
-
-    const handleDelete = useCallback(async () => {
-        if (selectedHobbyId == null) return;
-
-        setIsWaiting(true);
-        const ok = await onDeleteHobby(selectedHobbyId);
-        setIsWaiting(false);
-        if (ok) dispatch({ type: 'MENU_SELECT_HOBBY', id: null});
-    }, [ selectedHobbyId, onDeleteHobby ])
-
-
  
     return (
         <div className='hobbyPage'>
