@@ -9,7 +9,7 @@ export enum Menu {
 
  type Actions = {
   id: string;
-  title: string;
+  getTitle: () => string;
   style?: ButtonStyle;
   active: boolean;
   onClick: () => void;

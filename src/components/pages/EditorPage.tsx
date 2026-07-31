@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import Select from "../Select"
@@ -6,8 +6,8 @@ import  { ButtonStyle } from "../Button"
 import { Hobby } from "../../models/hobby"
 import HobbyForm from "../HobbyForm";
 import { Spinner } from "../Spinner";
-import { State, Action } from "../../App";
 import { Menu, TopMenu } from "../../models/menu";
+import { Action, State } from "../../hooks/taskReducer";
 
 // only for debug
 // import { sleep } from "../../utils/helpers";
@@ -15,7 +15,6 @@ import { Menu, TopMenu } from "../../models/menu";
 
 
 interface Props {
-    selectedHobbyId: number | null,
     state: State,
     dispatch: React.Dispatch<Action>,
     onUpdateHobby: (hobby: Hobby) => Promise<boolean>,
@@ -24,7 +23,6 @@ interface Props {
 }
 
 export function EditorPage({ 
-    selectedHobbyId,
     state,
     dispatch,
     onUpdateHobby, 
@@ -32,12 +30,13 @@ export function EditorPage({
     onDeleteHobby,
 }: Props) {
     const [t] = useTranslation();
+    const tRef = useRef(t);
 
     const [isWaiting, setIsWaiting] = useState(false);
     const [hobbyForm, setHobbyForm] = useState({ isOpen: false, isUpdate: false});
     const selectedHobby = useMemo(
-        () => state.server.hobbies.find(h => h.id === selectedHobbyId) ?? null,
-        [state.server.hobbies, selectedHobbyId]
+        () => state.server.hobbies.find(h => h.id === state.selectedItemId) ?? null,
+        [state.server.hobbies, state.selectedItemId]
     );
 
 
@@ -45,44 +44,48 @@ export function EditorPage({
         setHobbyForm({isOpen: false, isUpdate: false});
     }
 
-    const handleDelete = useCallback(async () => {
-        if (selectedHobbyId == null) return;
+    async function handleDelete() {
+        if (state.selectedItemId == null) return;
 
         setIsWaiting(true);
-        const ok = await onDeleteHobby(selectedHobbyId);
+        const ok = await onDeleteHobby(state.selectedItemId);
         setIsWaiting(false);
         if (ok) dispatch({ type: 'MENU_SELECT_HOBBY', id: null});
-    }, [ selectedHobbyId, onDeleteHobby, dispatch ])
+    }
 
     
-    const topMenu = useMemo(() => new TopMenu(Menu.edit, [
+    const [topMenu] = useState(() => 
+        new TopMenu(Menu.edit, [
             {
                 id: 'add',
-                title: t('common.add'),
+                getTitle: () => tRef.current('common.add'),
                 style: ButtonStyle.Primary,
                 active: true,
                 onClick: () => setHobbyForm({isOpen: true, isUpdate: false})
             },
             {
                 id: 'edit',
-                title: t('common.update'),
+                getTitle: () => tRef.current('common.update'),
                 style: ButtonStyle.Primary,
                 active: false,
                 onClick: () => setHobbyForm({isOpen: true, isUpdate: true})
             },
             {
                 id: 'delete',
-                title: t('common.delete'),
+                getTitle: () => tRef.current('common.delete'),
                 style: ButtonStyle.Primary,
                 active: false,
                 onClick: () => handleDelete()
             },
         ]
-    ), [ handleDelete, t]);
+    ));
 
     useEffect(() => {
-        dispatch({ type: 'TOP_MENU_INSTALL', topMenu: topMenu})
+        tRef.current = t;
+    }, [t]);
 
+    useEffect(() => {
+        dispatch({ type: 'TOP_MENU_INSTALL', topMenu });
     }, [dispatch, topMenu]);
 
     async function handleFormSubmit(name: string, description: string) {
@@ -108,7 +111,7 @@ export function EditorPage({
             <Select 
                 items={state.server.hobbies.map(sel => ({ id: sel.id, name: sel.name }))}
                 onChange={ (value) => { dispatch({ type: 'MENU_SELECT_HOBBY', id: value })}}
-                active={selectedHobbyId}
+                active={state.selectedItemId}
                 defaultTitle={t('app.selectHobby')}
             />                 
             }

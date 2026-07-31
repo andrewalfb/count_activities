@@ -1,32 +1,34 @@
 import { useTranslation } from "react-i18next";
 import Select from "../Select";
 import { ButtonStyle } from "../Button";
-import { Action, State } from "../../App";
 import { Menu, TopMenu } from "../../models/menu";
-import { useEffect, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Action, State } from "../../hooks/taskReducer";
 
 
 interface Props {
-    selectedHobbyId: number | null,
     state: State,
     dispatch: React.Dispatch<Action>,
 }
 
 export function MainPage({
-    selectedHobbyId,
     state,
     dispatch,
 }: Props) {
     const [t] = useTranslation();
+    const tRef = useRef(t);
 
-
-  const mainTopMenu = useMemo(() => new TopMenu(Menu.main, [{
+  const [mainTopMenu] = useState(() => new TopMenu(Menu.main, [{
     id: "start",
-    title: t("app.start"),
+    getTitle: () => tRef.current('app.start'),
     style: ButtonStyle.Primary,
     active: false,
     onClick: () => dispatch({ type: 'TIMER_START' })
-  }]), [dispatch, t]);
+  }]));
+
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
 
   useEffect(() => {
     dispatch({ type: 'TOP_MENU_INSTALL', topMenu: mainTopMenu });
@@ -38,7 +40,7 @@ export function MainPage({
             <Select 
                 items={  state.server.hobbies.map(item => ({ id: item.id, name: item.name }))} 
                 defaultTitle={t('app.selectHobby')}
-                active={selectedHobbyId}
+                active={state.selectedItemId}
                 onChange={ value => {dispatch({ type: 'MENU_SELECT_HOBBY', id: value});}}            
             />
         </div>

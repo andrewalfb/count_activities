@@ -16,134 +16,14 @@ import Button from './components/Button';
 import FormAlert from './components/HobbyWriteForm';
 
 // models and type
-import { Menu, TopMenu } from './models/menu';
+import { Menu } from './models/menu';
 import { EditorPage } from './components/pages/EditorPage';
 import { StatisticsPage } from './components/pages/StatisticsPage';
 import TopModal from './components/Alerts/TopModal';
 import { Spinner } from './components/Spinner';
-import { sleep } from './utils/helpers';
+// import { sleep } from './utils/helpers';
 import { MainPage } from './components/pages/MainPage';
-
-type Language = {
-id: number,
-lang: string,
-name: string
-}
-
-enum FlowStep {
-  Idle = 'idle',
-  TopMenu = 'top_menu',
-  Timer = 'timer',
-  Details = 'details',
-  Saving = 'saving',
-};
-
-
-type ServerState = {
-  hobbies: Hobby[];
-  hobbyTimes: HobbyTime[];
-  hobbyTimeDetails: HobbyTimeDetail[];
-};
-
-export type State = {
-  flow: FlowStep,
-  selectedItemId: number | null,
-  currentSpentTime: number,
-  timerActive: boolean,
-  server: ServerState,
-  menu: Menu,
-  topMenu: TopMenu | null,
-}
-
-export type Action = 
-  | { type: 'MENU_SELECT_HOBBY'; id: number | null }
-  | { type: 'TOP_MENU_INSTALL', topMenu: TopMenu }
-  | { type: 'TIMER_START'}
-  | { type: 'TIMER_STOP', spent: number }
-  | { type: 'TIMER_CANCEL'}
-  | { type: 'TIMER_RESET'}
-  | { type: 'SAVE_START' }
-  | { type: 'SAVE_SUCCESS', hobbyTimes: HobbyTime[] }
-  | { type: 'SAVE_ERROR' }
-  | { type: 'CANCEL_DETAILS' }
-  | { type: 'LOAD_HOBBIES', hobbies: Hobby[] }
-  | { type: 'ADD_HOBBY', hobby: Hobby}
-  | { type: 'UPDATE_HOBBY', hobby: Hobby}
-  | { type: 'LOAD_DETAILS', details: HobbyTimeDetail[] }
-  | { type: 'SET_MENU', menu: Menu };
-
-
-
-  const initialState: State = {
-    flow: FlowStep.Idle,
-    selectedItemId: null,
-    currentSpentTime: 0,
-    timerActive: false,
-    server: { hobbies: [], hobbyTimes: [], hobbyTimeDetails: []},
-    menu: Menu.main, 
-    topMenu: null,
-  };
-
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case 'MENU_SELECT_HOBBY':
-      return { ...state, selectedItemId: action.id, flow: FlowStep.Idle };
-    case 'TOP_MENU_INSTALL':
-      return { ...state, topMenu: action.topMenu, flow: FlowStep.TopMenu };
-    case 'TIMER_START':
-      return { ...state, flow: FlowStep.Timer, timerActive: true, currentSpentTime: 0}
-    case 'TIMER_STOP':
-      return { ...state, currentSpentTime: action.spent, flow: FlowStep.Details, timerActive: false
-      };
-    case 'TIMER_CANCEL':
-      return { ...state, flow: FlowStep.Idle, timerActive: false}
-    case 'TIMER_RESET':
-      return { ...state, timerActive: false, flow: FlowStep.Timer}
-    case 'SAVE_START':
-      return { ...state, flow: FlowStep.Saving };
-    case 'SAVE_SUCCESS':
-      return {
-        ...state,
-        flow: FlowStep.Idle,
-        currentSpentTime: 0,
-        server: { ...state.server, hobbyTimes: action.hobbyTimes },
-      };
-    case 'SAVE_ERROR':
-      return { ...state, flow: FlowStep.Details };
-    case 'CANCEL_DETAILS':
-      return { ...state, flow: FlowStep.Idle };
-    case 'LOAD_HOBBIES':
-      return { ...state, server: { ...state.server, hobbies: action.hobbies } };
-    case 'ADD_HOBBY': 
-      return { 
-        ...state, 
-        server: {
-          ...state.server,
-          hobbies: [...state.server.hobbies, action.hobby]  
-        }};
-    case 'UPDATE_HOBBY': 
-        return {
-          ...state,
-          server: {
-            ...state.server,
-            hobbies: state.server.hobbies.map(h => (h.id === action.hobby.id ? action.hobby : h))
-          }
-        };
-    case 'LOAD_DETAILS':
-      return { ...state, server: { ...state.server, hobbyTimeDetails: action.details } };
-    case 'SET_MENU':
-      return { ...state, menu: action.menu };
-    
-    default:
-      return state;
-  }
-}
-
-const api = axios.create({
-  withCredentials: true
-});
-
-
+import { FlowStep, reducer, State } from './hooks/taskReducer';
 
 
 function App() {
@@ -158,6 +38,13 @@ function App() {
     : undefined
 
   const initialized = useRef(false);
+
+  useEffect(() => {
+    dispatch({
+      type:'SET_LANGUAGE',
+      language: i18n.language
+    })
+  }, [i18n.language]);
 
   useEffect(() => {
 
@@ -223,7 +110,7 @@ function App() {
 
     dispatch({ type: 'SAVE_START'});
 
-    await sleep(1000);
+    // await sleep(1000);
 
     api.post(apiConfig.endpoints.hobby.addTimes(), json)
     .then((response) => {
@@ -350,7 +237,7 @@ function App() {
                   <Button
                     key={a.id}
                     style={a.style}
-                    title={a.title}
+                    title={a.getTitle()}
                     enabled={a.active || (state.selectedItemId != null)}
                     onClick={a.onClick}
                   />))
@@ -371,7 +258,6 @@ function App() {
               { state.menu === Menu.main && (
                 <div className="menuPage">
                   <MainPage 
-                    selectedHobbyId={state.selectedItemId}
                     state={state}
                     dispatch={dispatch}
                     
@@ -405,7 +291,6 @@ function App() {
                 { state.menu === Menu.edit && (
                 <div className='menuPage'>
                   <EditorPage
-                    selectedHobbyId={state.selectedItemId}
                     state={state}
                     dispatch={dispatch}
                     onUpdateHobby={handleUpdateHobby}
@@ -441,5 +326,28 @@ function App() {
     </>
   );
 }
+
+
+type Language = {
+  id: number,
+  lang: string,
+  name: string
+}
+
+const api = axios.create({
+  withCredentials: true
+});
+
+
+const initialState: State = {
+  flow: FlowStep.Idle,
+  selectedItemId: null,
+  currentSpentTime: 0,
+  timerActive: false,
+  server: { hobbies: [], hobbyTimes: [], hobbyTimeDetails: []},
+  menu: Menu.main, 
+  topMenu: null,
+  language: 'en'
+};
 
 export default App;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { formatTime } from "../../utils/helpers";
@@ -7,11 +7,11 @@ import DataTable from "../DataTable";
 import { HobbyTimeDetail, HobbyTime } from "../../models/hobby";
 import Select from "../Select";
 import { Spinner } from "../Spinner";
-import { Action, State } from "../../App";
 
 // only for debug
 // import { sleep } from "../../utils/helpers";    
 import { Menu, TopMenu } from "../../models/menu";
+import { Action, State } from "../../hooks/taskReducer";
 
 interface Props {
     selectedHobbyId: number | null,
@@ -66,27 +66,41 @@ export function StatisticsPage({
         }        
     }, [setIsWaiting, onHobbyTimes, setIsShowTodayActivities ])
 
-    const topMenu = useMemo(() => new TopMenu(Menu.edit, [
-        {
-                id: 'detailsReport',
-                title: t('statistics.timeReport'),
-                style: ButtonStyle.Primary,
-                active: false,
-                onClick: () => handleDetailsReport()
-            },
-            {
-                id: 'todayReport',
-                title: t('statistics.todayActivities'),
-                style: ButtonStyle.Primary,
-                active: true,
-                onClick: () => handleTodayActivitiesReport()                   
-            }
-        ]
-    ), [ handleDetailsReport, handleTodayActivitiesReport, t]);
+const detailsReportRef = useRef(handleDetailsReport);
+const todayActivitiesReportRef = useRef(handleTodayActivitiesReport);
+const tRef = useRef(t);
 
-    useEffect(() => {
-        dispatch({ type: 'TOP_MENU_INSTALL', topMenu});
-    }, [dispatch, topMenu]);
+detailsReportRef.current = handleDetailsReport;
+todayActivitiesReportRef.current = handleTodayActivitiesReport;
+
+const [topMenu] = useState(() =>
+    new TopMenu(Menu.edit, [
+        {
+            id: 'detailsReport',
+            getTitle: () => tRef.current('statistics.timeReport'),
+            style: ButtonStyle.Primary,
+            active: false,
+            onClick: () => detailsReportRef.current(),
+        },
+        {
+            id: 'todayReport',
+            getTitle: () => tRef.current('statistics.todayActivities'),
+            style: ButtonStyle.Primary,
+            active: true,
+            onClick: () => todayActivitiesReportRef.current(),
+        },
+    ])
+);
+
+useEffect(() => {
+    tRef.current = t;
+}, [t]);
+
+useEffect(() => {
+    dispatch({ type: 'TOP_MENU_INSTALL', topMenu });
+}, [dispatch, topMenu]);
+
+
 
     return (
     <div className="hobbyPage">
