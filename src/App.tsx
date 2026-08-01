@@ -30,7 +30,7 @@ function App() {
   const [t,i18n] = useTranslation();
 
   const [state, dispatch] = useReducer(reducer, initialState)
-  const isDetailsFormActive = state.flow === FlowStep.Details;
+  // const isDetailsFormActive = state.flow === FlowStep.Details;
   const isWaiting = state.flow === FlowStep.Saving;
 
   const selectedItem = state.selectedItemId
@@ -102,29 +102,25 @@ function App() {
 
   async function onSaveHobbyTime(value: number, description: string | undefined) {
     if (!selectedItem) return;
-        const json = {
+      const json = {
       hobby_id: selectedItem.id,
       spent_time: value,
-      description: description
+      description: description?.length === 0 ? selectedItem.description : description
     };
 
     dispatch({ type: 'SAVE_START'});
 
     // await sleep(1000);
 
-    api.post(apiConfig.endpoints.hobby.addTimes(), json)
-    .then((response) => {
-      console.log(`responce: ${response}`)
-      api.get(apiConfig.endpoints.hobby.times())
-        .then((response: { data: HobbyTime[] }) => {
-        console.log(response);
-        dispatch({type: 'SAVE_SUCCESS', hobbyTimes: response.data});
-      });
-
-    }).catch(error => {
+    try {
+      const responceAdd = await api.post(apiConfig.endpoints.hobby.addTimes(), json);
+      const responceTimes = await api.get(apiConfig.endpoints.hobby.times());
+      console.log(`addTime: ${responceAdd}, ${responceTimes}`);
+      dispatch({type: 'SAVE_SUCCESS', hobbyTimes: responceTimes.data});
+    } catch(error) {
       console.error(`error add time: ${error}`);
       dispatch({type: 'SAVE_ERROR'});
-    });
+    };
   }
 
 
@@ -274,7 +270,7 @@ function App() {
                     />
                   </TopModal>
 
-                  <TopModal open={isDetailsFormActive} onClose={onHandleCancelHobbytime}>
+                  <TopModal open={state.flow === FlowStep.Details} onClose={onHandleCancelHobbytime}>
                     <FormAlert
                       title={t('hobbyWriteForm.whatIsDone')}
                       currentSpentTime={state.currentSpentTime}
