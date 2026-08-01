@@ -6,9 +6,10 @@
     "axios": "^1.18.1",
     "cookie-parser": "^1.4.7",
     "i18next": "^26.3.6",
-    "react-i18next": "^17.0.9",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-i18next": "^17.0.9",
+    "sql.js": "^1.14.1",
     "uuid": "^11.1.1",
     "web-vitals": "^2.1.4"
   },
@@ -21,15 +22,15 @@
     "@types/node": "^16.18.126",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "@types/sql.js": "^1.4.11",
     "@types/uuid": "^9.0.0",
-    "react-scripts": "5.0.1",
-    "typescript": "^5.9.3"
+    "@vitejs/plugin-react": "^2.0.1",
+    "typescript": "^5.9.3",
+    "vite": "^3.0.7"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "node ./scripts/build.js",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "vite --host",
+    "build": "vite build"
   },
   "eslintConfig": {
     "extends": [

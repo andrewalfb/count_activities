@@ -1,4 +1,3 @@
-import { timeStamp } from 'node:console';
 import { DatabaseSync } from 'node:sqlite';
 
 // const db = new DatabaseSync(':memory:');
