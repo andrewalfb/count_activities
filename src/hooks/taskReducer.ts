@@ -34,6 +34,7 @@ export type Action =
   | { type: 'TIMER_START'}
   | { type: 'TIMER_STOP', spent: number }
   | { type: 'TIMER_CANCEL'}
+  | { type: 'TIMER_DISPLAY_CLOSE'}
   | { type: 'TIMER_RESET'}
   | { type: 'SAVE_START' }
   | { type: 'SAVE_SUCCESS', hobbyTimes: HobbyTime[] }
@@ -59,6 +60,8 @@ export function reducer(state: State, action: Action): State {
     case 'TIMER_STOP':
       return { ...state, currentSpentTime: action.spent, flow: FlowStep.Details, timerActive: false
       };
+    case 'TIMER_DISPLAY_CLOSE':
+      return { ...state, flow: FlowStep.Idle }
     case 'TIMER_CANCEL':
       return { ...state, flow: FlowStep.Idle, timerActive: false}
     case 'TIMER_RESET':

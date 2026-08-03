@@ -1,18 +1,16 @@
 
-import { useEffect, useRef, useReducer } from 'react';
+import { useEffect, useRef, useReducer, useState, useMemo } from 'react';
 
-import axios from 'axios';
+
 import { useTranslation } from 'react-i18next';
 
 import './App.css';
-import { apiConfig } from './config/api'
 
 import Sidebar from './components/Sidebar/SideBar';
 import Select from './components/Select';
-import Timer from './components/Timer';
 
 import { Hobby, HobbyTime, HobbyTimeDetail } from './models/hobby';
-import Button from './components/Button';
+import Button, { ButtonStyle } from './components/Button';
 import FormAlert from './components/HobbyWriteForm';
 
 // models and type
@@ -21,17 +19,18 @@ import { EditorPage } from './components/pages/EditorPage';
 import { StatisticsPage } from './components/pages/StatisticsPage';
 import TopModal from './components/Alerts/TopModal';
 import { Spinner } from './components/Spinner';
-// import { sleep } from './utils/helpers';
+
 import { MainPage } from './components/pages/MainPage';
 import { FlowStep, reducer, State } from './hooks/taskReducer';
 import { dbManager } from './utils/db';
+import TimerDisplay from './components/TimerDisplay';
+import { formatTime } from './utils/helpers';
 
 
 function App() {
   const [t, i18n] = useTranslation();
 
   const [state, dispatch] = useReducer(reducer, initialState)
-  // const isDetailsFormActive = state.flow === FlowStep.Details;
   const isWaiting = state.flow === FlowStep.Saving;
 
   const selectedItem = state.selectedItemId
@@ -39,6 +38,54 @@ function App() {
     : undefined
 
   const initialized = useRef(false);
+
+// new timer behaviour---start
+
+const intervalRef = useRef<number | null>(null);
+const startStampRef = useRef<number | null>(null); // ms
+const elapsedBeforeRef = useRef<number>(0); // seconds accumulated
+
+const [now, setNow] = useState(() => Date.now());
+
+const secondsPass = useMemo(() => {
+  if (startStampRef.current == null) return elapsedBeforeRef.current;
+  return elapsedBeforeRef.current + (now - startStampRef.current) / 1000;
+}, [now]);
+
+useEffect(() => {
+  if (!state.timerActive) {
+    if (intervalRef.current != null) {
+      window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    return;
+  }
+
+  if (startStampRef.current == null) {
+    startStampRef.current = Date.now();
+  }
+
+  intervalRef.current = window.setInterval(() => {
+    setNow(Date.now());
+  }, 1000);
+
+  return () => {
+    if (intervalRef.current != null) {
+      window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+}, [state.timerActive]);
+
+useEffect(() => {
+  if (state.flow === FlowStep.Idle && !state.timerActive) {
+    elapsedBeforeRef.current = 0;
+    startStampRef.current = null;
+    setNow(Date.now());
+  }
+}, [state.flow, state.timerActive]);
+// --------new timer behaviour-----------End
+
 
   useEffect(() => {
     dispatch({
@@ -53,14 +100,12 @@ function App() {
       if (initialized.current) { return };
       initialized.current = true;
 
-      // await api.get(apiConfig.endpoints.auth.init());
       await dbManager.initAnonAuth();
       await loadHobbies();
     };
 
     bootstrap().catch(console.error);
 
-    // add local db
     (async () => {
       await dbManager.initDb();
     })();
@@ -80,82 +125,78 @@ function App() {
   };
 
   const loadHobbies = async () => {
-    // const res = await api.get(apiConfig.endpoints.hobby.list());
     const res = await dbManager.getHobbiesList();
     dispatch({ type: 'LOAD_HOBBIES', hobbies: res });
   };
 
-  // Timer
+  // Timer--Start
   function onHandleCancelHobbytime() {
     dispatch({ type: 'TIMER_CANCEL' });
   };
 
   function handleTimerStart() {
-    dispatch({ type: 'TIMER_START' });
+  if (startStampRef.current == null) {
+    startStampRef.current = Date.now();
   }
+  elapsedBeforeRef.current = 0;
 
-  function handleTimerStop(value: number) {
-    dispatch({ type: 'TIMER_STOP', spent: value });
-  };
+  dispatch({ type: "TIMER_START" });
+}
 
-  function handleTimerCancel() {
-    dispatch({ type: 'CANCEL_DETAILS' });
-  };
 
-  function handleTimerReset() {
-    dispatch({ type: 'TIMER_RESET' })
-  };
+function freezeElapsedSeconds() {
+  const startStamp = startStampRef.current;
+  if (startStamp == null) return elapsedBeforeRef.current;
+
+  const finalSeconds =
+    elapsedBeforeRef.current + (Date.now() - startStamp) / 1000;
+
+  elapsedBeforeRef.current = finalSeconds;
+  startStampRef.current = null;
+
+  return finalSeconds;
+}
+
+function handleTimerStop() {
+  const spent = freezeElapsedSeconds();
+  dispatch({ type: "TIMER_STOP", spent });
+}
+
+function handleTimerReset() {
+  elapsedBeforeRef.current = 0;
+  startStampRef.current = null;
+  setNow(Date.now());
+
+  dispatch({ type: "TIMER_RESET" });
+}
+
+function handleTimerClose() {
+  dispatch({ type: 'TIMER_DISPLAY_CLOSE' });
+}
+
+  //Timer----end
 
   async function onSaveHobbyTime(value: number, description: string | undefined) {
     if (!selectedItem) return;
-    //   const json = {
-    //   hobby_id: selectedItem.id,
-    //   spent_time: value,
-    //   description: description?.length === 0 ? selectedItem.description : description
-    // };
 
     dispatch({ type: 'SAVE_START' });
 
-    // await sleep(1000);
-    /*
-        try {
-          const responceAdd = await api.post(apiConfig.endpoints.hobby.addTimes(), json);
-          const responceTimes = await api.get(apiConfig.endpoints.hobby.times());
-          console.log(`addTime: ${responceAdd}, ${responceTimes}`);
-          dispatch({type: 'SAVE_SUCCESS', hobbyTimes: responceTimes.data});
-        } catch(error) {
-          console.error(`error add time: ${error}`);
-          dispatch({type: 'SAVE_ERROR'});
-        };
-    */
+   const newDescription = (description?.length === 0 ? selectedItem.description : description) ?? selectedItem.description;
     try {
-      const responceAdd = await dbManager.setHobbyTime(selectedItem.id, value, selectedItem.description);
-      const responceTimes = await dbManager.getHobbyTimeList();
-      console.log(`addTime: ${responceAdd}, ${responceTimes}`);
-      dispatch({ type: 'SAVE_SUCCESS', hobbyTimes: responceTimes });
+      const responseAdd = await dbManager.setHobbyTime(
+        selectedItem.id, 
+        value, 
+        newDescription
+      );
+      const responseTimes = await dbManager.getHobbyTimeList();
+      console.log(`addTime: ${responseAdd}, ${responseTimes}`);
+      dispatch({ type: 'SAVE_SUCCESS', hobbyTimes: responseTimes });
     } catch (error) {
       console.error(`error add time: ${error}`);
       dispatch({ type: 'SAVE_ERROR' });
     };
   }
 
-
-/*
-  async function handleSubmitForm(name: string, description: string): Promise<boolean> {
-    const json = { name: name, description: description }
-    try {
-      const response = await api.post(apiConfig.endpoints.hobby.addHobby(), json);
-      const newHobby = new Hobby(response.data.id, name, description);
-      dispatch({ type: 'ADD_HOBBY', hobby: newHobby });
-
-      return true;
-    } catch (error) {
-      console.error(`error add hobby: ${error}`);
-
-      return false;
-    }
-  }
-*/
 
   async function handleSubmitForm(name: string, description: string): Promise<boolean> {
     const json = { name: name, description: description }
@@ -170,20 +211,7 @@ function App() {
       return false;
     }
   }
-/*
-  async function handleDelete(hobbyId: number): Promise<boolean> {
-    try {
-      await api.delete(apiConfig.endpoints.hobby.delete(hobbyId));
-      await loadHobbies();
 
-      return true;
-    } catch (error: any) {
-      console.error(`error delete Hobby: ${error}`);
-
-      return false;
-    }
-  }
-*/
   async function handleDelete(hobbyId: number): Promise<boolean> {
     try {
       await dbManager.deleteHobby(hobbyId);
@@ -197,24 +225,6 @@ function App() {
     }
   }
 
-/*
-  async function getSpentTimesToday(): Promise<boolean> {
-    try {
-      const res = await api.get(apiConfig.endpoints.hobby.times());
-      const times = res.data.map(
-        (item: { name: string, description: string, spentTime: number, timestamp: number }) =>
-          new HobbyTime(item.name, item.description, item.spentTime, item.timestamp)
-      )
-      dispatch({ type: 'SAVE_SUCCESS', hobbyTimes: times });
-
-      return true;
-    } catch (error) {
-      console.error(`error getting today activities: ${error}`);
-
-      return false;
-    }
-  }
-*/
   async function getSpentTimesToday(): Promise<boolean> {
     try {
       const times = await dbManager.getHobbyTimeList();
@@ -229,23 +239,6 @@ function App() {
     }
   }
 
-  /*
-  async function handleShowDetails(hobbyId: number): Promise<boolean> {
-    try {
-      let response = await api.get(apiConfig.endpoints.hobby.details(), { params: { hobbyId: hobbyId } })
-
-      const newHobbyDetails = response.data.map((item: { hobby: string, description: string; spentTime: number; }) => new HobbyTimeDetail(item.hobby, item.description, item.spentTime));
-
-      dispatch({ type: 'LOAD_DETAILS', details: newHobbyDetails });
-
-      return true
-    } catch (error) {
-      console.error(`error getting details report: ${error}`);
-
-      return false
-    }
-  }
-    */
   async function handleShowDetails(hobbyId: number): Promise<boolean> {
     try {
       let newHobbyDetails = await dbManager.getDetailsSpentTimes(hobbyId);
@@ -260,23 +253,7 @@ function App() {
     }
   }
 
-/*
-  async function handleUpdateHobby(updated: Hobby): Promise<boolean> {
 
-    const json = { id: updated.id, name: updated.name, description: updated.description };
-    try {
-      let ok = await api.post(apiConfig.endpoints.hobby.updateHobby(), json);
-      console.log(`result update hobby: ${ok}`);
-      dispatch({ type: 'UPDATE_HOBBY', hobby: updated });
-
-      return true;
-    } catch (error) {
-      console.error(`error update Hobby: ${error}`);
-
-      return false;
-    }
-  }
-*/
   async function handleUpdateHobby(updated: Hobby): Promise<boolean> {
 
     const json = { id: updated.id, name: updated.name, description: updated.description };
@@ -306,6 +283,8 @@ function App() {
     i18n.changeLanguage(language?.lang);
   }
 
+const timerLabel = formatTime(secondsPass); // reuse your existing formatTime
+
   return (
     <>
       <div className='appLayout'>
@@ -329,15 +308,28 @@ function App() {
                   onClick={a.onClick}
                 />))
               }
+            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
+              {state.timerActive && (
+                <div className="miniTimer">
+                  <span className="miniTimerValue">{timerLabel}</span>
 
-              <div style={{ marginLeft: 'auto' }}>
-                <Select
-                  items={languages.map(language => ({ id: language.id, name: language.name }))}
-                  active={languages[0].id}
-                  defaultTitle={null}
-                  onChange={(value) => handleLanguageChange(value)}
-                />
-              </div>
+                  <Button
+                    title={t('timer.stop')}
+                    style={ButtonStyle.Primary}
+                    onClick={handleTimerStop}
+                  />
+                </div>
+              )}
+
+              <Select
+                items={languages.map((language) => ({ id: language.id, name: language.name }))}
+                active={languages[0].id}
+                defaultTitle={null}
+                onChange={(value) => handleLanguageChange(value)}
+              />
+            </div>
+
+
             </div>
 
             {/* PAGE CONTENT */}
@@ -350,16 +342,18 @@ function App() {
 
                   />
 
-                  <TopModal open={state.flow === FlowStep.Timer} onClose={handleTimerCancel}>
-                    <Timer
-                      name={selectedItem?.name ?? 'none'}
+                  <TopModal open={state.flow === FlowStep.Timer} onClose={handleTimerClose}>
+                    <TimerDisplay
+                      name={selectedItem?.name ?? "none"}
                       active={state.timerActive}
+                      secondsPass={secondsPass}
                       onStartClick={handleTimerStart}
-                      onStopClick={handleTimerStop}
-                      onCancelClick={handleTimerCancel}
+                      onStopClick={handleTimerStop}     // parent will “save current value and stop”
+                      onCloseClick={handleTimerClose} // same behavior as close
                       onResetClick={handleTimerReset}
                     />
                   </TopModal>
+
 
                   <TopModal open={state.flow === FlowStep.Details} onClose={onHandleCancelHobbytime}>
                     <FormAlert
@@ -371,8 +365,6 @@ function App() {
                   </TopModal>
                 </div>
               )}
-
-
 
               <div>
                 {state.menu === Menu.edit && (
@@ -387,7 +379,6 @@ function App() {
                   </div>
                 )}
               </div>
-
 
               <div>
                 {state.menu === Menu.statistics && (
@@ -407,8 +398,6 @@ function App() {
             </div>
           </div>
         </main>
-
-
       </div>
     </>
   );
@@ -421,9 +410,6 @@ type Language = {
   name: string
 }
 
-const api = axios.create({
-  withCredentials: true
-});
 
 
 const initialState: State = {
