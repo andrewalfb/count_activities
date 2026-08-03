@@ -55,7 +55,8 @@
         "reset": "Վերականգնել"
     },
     "hobbyWriteForm": {
-        "whatIsDone": "Ինչ է արվել"
+        "whatIsDone": "Ինչ է արվել",
+        "spentTime": "Դուք կարող եք շտկել ծախսած ժամանակը։:"
     },
     "select": {
         "default": "Ընտրել..."

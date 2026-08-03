@@ -54,7 +54,8 @@
         "reset": "Réinitialiser"
     },
     "hobbyWriteForm": {
-        "whatIsDone": "Qu'est-ce qui a été fait"
+        "whatIsDone": "Qu'est-ce qui a été fait",
+        "spentTime": "Vous pouvez corriger le temps passé."
     },
     "select": {
         "default": "Sélectionner..."

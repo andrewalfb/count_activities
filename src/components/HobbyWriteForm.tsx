@@ -18,7 +18,7 @@ export default function FormAlert({
 
     const [t] = useTranslation();
     const [description, setDescription] = useState("");
-    let spentTime = currentSpentTime
+    const [spentTime, setSpentTime] = useState(currentSpentTime.toString());
 
 
     return (
@@ -38,13 +38,27 @@ export default function FormAlert({
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder={t('hobbyWriteForm.whatIsDone')}
-                        style={{ width: "100%", padding: 8, marginBottom: 12 }}
+                    />
+                    <label>{t('hobbyWriteForm.spentTime')}</label>
+                    <input 
+                        className='formInput'
+                        value={spentTime}
+                        onChange={(e) => {
+                            const next = e.target.value;
+                            // if (!/^(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(next)) return;
+                            if (!/^[0-9]*\.?[0-9]*$/.test(next)) return;
+
+                            setSpentTime(next); 
+                        }}
                     />
 
                     <div className='formActions'>
                         <Button
                             style={ButtonStyle.Primary}
-                            onClick={() => { onSave(spentTime, description); }}
+                            onClick={() => { 
+                                const newSpent = Number(spentTime)
+                                onSave(newSpent > 0 ? newSpent : currentSpentTime, description); 
+                            }}
                             title={t('common.save')}
                         />
                         <Button 

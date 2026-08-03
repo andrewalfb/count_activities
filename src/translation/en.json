@@ -55,7 +55,8 @@
         "reset": "Reset"
     },
     "hobbyWriteForm": {
-        "whatIsDone": "You should write details about what is done."
+        "whatIsDone": "You should write details about what is done.",
+        "spentTime": "You can correct spent time:"
     },
     "select": {
         "default": "Select..."
