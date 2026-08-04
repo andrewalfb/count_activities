@@ -14,9 +14,9 @@
         "descriptionPlaceholder": "description hobby"
     },
     "app": {
-        "en": "English",
-        "fr": "Français",
-        "hy": "Հայերեն",
+        "en": "En",
+        "fr": "Fr",
+        "hy": "Հա",
         "showMenu": "Show menu",
         "whatWillDo": "What will do:",
         "start": "Start",

@@ -148,3 +148,89 @@ export function BritishIcon({
     </svg>
   )
 }
+
+export function stopIcon({
+  size = iconSize,
+  color = 'currentColor'
+}: IconProps) {
+  
+  return (
+    <svg
+      width={size}
+      height={size} 
+      fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g clipPath="url(#clip0_429_11149)">
+      <rect 
+        x="5" y="5" width="14" height="14" rx="2" 
+        stroke={color}
+        strokeWidth="2.5" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"/>
+      </g>
+      <defs>
+      <clipPath id="clip0_429_11149">
+      <rect width="24" height="24" fill="white"/>
+      </clipPath>
+      </defs>
+    </svg>
+  )
+}
+
+export function pauseIcon({
+  size = iconSize,
+  color = 'currentColor'
+}: IconProps) {
+
+  return (
+    <svg 
+      width={size} 
+      height={size} 
+      viewBox="0 0 24 24" 
+      xmlns="http://www.w3.org/2000/svg">
+      <g clipPath="url(#clip0_429_11098)">
+        <path d="M5 7C5 5.89543 5.89543 5 7 5H8C9.10457 5 10 5.89543 10 7V17C10 18.1046 9.10457 19 8 19H7C5.89543 19 5 18.1046 5 17V7Z" 
+        stroke={color}
+        strokeWidth="2.5" 
+        strokeLinejoin="round"
+        fill="white"
+        />
+        <path d="M14 7C14 5.89543 14.8954 5 16 5H17C18.1046 5 19 5.89543 19 7V17C19 18.1046 18.1046 19 17 19H16C14.8954 19 14 18.1046 14 17V7Z" 
+        stroke={color}
+        strokeWidth="2.5" 
+        strokeLinejoin="round"
+          fill="white"
+        />
+      </g>
+
+    </svg>
+  )
+}
+
+export function startIcon({
+  size = iconSize,
+  color = 'currentColor'
+}: IconProps) {
+
+  return (
+    <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg">
+      <g clipPath="url(#clip0_429_11238)">
+      <path 
+        d="M19 10.2679C20.3333 11.0377 20.3333 12.9623 19 13.7321L10 18.9282C8.66667 19.698 7 18.7358 7 17.1962L7 6.80385C7 5.26425 8.66667 4.302 10 5.0718L19 10.2679Z" 
+        stroke={color}
+        strokeWidth="2.5" 
+        strokeLinejoin="round"
+      />
+      </g>
+    <defs>
+      <clipPath id="clip0_429_11238">
+      <rect width="24" height="24" fill="white"/>
+      </clipPath>
+      </defs>
+    </svg>
+    )
+}

@@ -6,10 +6,16 @@ export enum FlowStep {
   Idle = 'idle',
   TopMenu = 'top_menu',
   Timer = 'timer',
+  Pause = 'timer_pause',
   Details = 'details',
   Saving = 'saving',
 };
 
+export enum TimerState {
+  Stop = 0,
+  Pause,
+  Active
+}
 
 type ServerState = {
   hobbies: Hobby[];
@@ -22,6 +28,7 @@ export type State = {
   selectedItemId: number | null,
   currentSpentTime: number,
   timerActive: boolean,
+  timerOnMenu: boolean,
   server: ServerState,
   menu: Menu,
   topMenu: TopMenu | null,
@@ -32,6 +39,7 @@ export type Action =
   | { type: 'MENU_SELECT_HOBBY'; id: number | null }
   | { type: 'TOP_MENU_INSTALL', topMenu: TopMenu }
   | { type: 'TIMER_START'}
+  | { type: 'TIMER_PAUSE', spent: number }
   | { type: 'TIMER_STOP', spent: number }
   | { type: 'TIMER_CANCEL'}
   | { type: 'TIMER_DISPLAY_CLOSE'}
@@ -56,12 +64,14 @@ export function reducer(state: State, action: Action): State {
     case 'TOP_MENU_INSTALL':
       return { ...state, topMenu: action.topMenu, flow: FlowStep.TopMenu };
     case 'TIMER_START':
-      return { ...state, flow: FlowStep.Timer, timerActive: true, currentSpentTime: 0}
+      return { ...state, flow: FlowStep.Timer, timerActive: true };
+    case 'TIMER_PAUSE':
+      return { ...state, flow: FlowStep.Pause, timerActive: false, currentSpentTime: action.spent }
     case 'TIMER_STOP':
-      return { ...state, currentSpentTime: action.spent, flow: FlowStep.Details, timerActive: false
+      return { ...state, currentSpentTime: action.spent, flow: FlowStep.Details, timerActive: false, timerOnMenu: false
       };
     case 'TIMER_DISPLAY_CLOSE':
-      return { ...state, flow: FlowStep.Idle }
+      return { ...state, flow: FlowStep.Idle, timerOnMenu: true }
     case 'TIMER_CANCEL':
       return { ...state, flow: FlowStep.Idle, timerActive: false}
     case 'TIMER_RESET':

@@ -25,6 +25,7 @@ import { FlowStep, reducer, State } from './hooks/taskReducer';
 import { dbManager } from './utils/db';
 import TimerDisplay from './components/TimerDisplay';
 import { formatTime } from './utils/helpers';
+import { pauseIcon, startIcon, stopIcon } from './components/Icons';
 
 
 function App() {
@@ -42,8 +43,8 @@ function App() {
 // new timer behaviour---start
 
 const intervalRef = useRef<number | null>(null);
-const startStampRef = useRef<number | null>(null); // ms
-const elapsedBeforeRef = useRef<number>(0); // seconds accumulated
+const startStampRef = useRef<number | null>(null); 
+const elapsedBeforeRef = useRef<number>(0); 
 
 const [now, setNow] = useState(() => Date.now());
 
@@ -79,7 +80,7 @@ useEffect(() => {
 
 useEffect(() => {
   if (state.flow === FlowStep.Idle && !state.timerActive) {
-    elapsedBeforeRef.current = 0;
+    elapsedBeforeRef.current = state.currentSpentTime;
     startStampRef.current = null;
     setNow(Date.now());
   }
@@ -135,13 +136,22 @@ useEffect(() => {
   };
 
   function handleTimerStart() {
-  if (startStampRef.current == null) {
-    startStampRef.current = Date.now();
-  }
-  elapsedBeforeRef.current = 0;
+    if (startStampRef.current == null) {
+      startStampRef.current = Date.now();
+    }
+    elapsedBeforeRef.current = 0;
 
-  dispatch({ type: "TIMER_START" });
-}
+    dispatch({ type: "TIMER_START" });
+  }
+
+  function handleTimerResume() {
+    if (startStampRef.current == null) {
+      startStampRef.current = Date.now();
+    }
+    elapsedBeforeRef.current = state.currentSpentTime;
+
+    dispatch({ type: "TIMER_START" });
+  }
 
 
 function freezeElapsedSeconds() {
@@ -159,7 +169,12 @@ function freezeElapsedSeconds() {
 
 function handleTimerStop() {
   const spent = freezeElapsedSeconds();
-  dispatch({ type: "TIMER_STOP", spent });
+  dispatch({ type: "TIMER_STOP", spent: spent });
+}
+
+function handleTimerPause() {
+  const spent = freezeElapsedSeconds();
+  dispatch({ type: 'TIMER_PAUSE', spent: spent });
 }
 
 function handleTimerReset() {
@@ -309,17 +324,26 @@ const timerLabel = formatTime(secondsPass); // reuse your existing formatTime
                 />))
               }
             <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
-              {state.timerActive && (
+              { state.timerOnMenu && 
                 <div className="miniTimer">
                   <span className="miniTimerValue">{timerLabel}</span>
-
                   <Button
+                    icon={state.timerActive ? stopIcon : startIcon }
                     title={t('timer.stop')}
-                    style={ButtonStyle.Primary}
-                    onClick={handleTimerStop}
+                    style={ButtonStyle.Icon}
+                    onClick={state.timerActive ? handleTimerStop : handleTimerResume }
                   />
+                  { state.timerActive &&
+                  
+                    <Button
+                      icon={pauseIcon}
+                      title={t('timer.stop')}
+                      style={ButtonStyle.Icon}
+                      onClick={handleTimerPause}
+                    />
+                  }
                 </div>
-              )}
+              }
 
               <Select
                 items={languages.map((language) => ({ id: language.id, name: language.name }))}
@@ -329,9 +353,7 @@ const timerLabel = formatTime(secondsPass); // reuse your existing formatTime
               />
             </div>
 
-
             </div>
-
             {/* PAGE CONTENT */}
             <div>
               {state.menu === Menu.main && (
@@ -342,20 +364,24 @@ const timerLabel = formatTime(secondsPass); // reuse your existing formatTime
 
                   />
 
-                  <TopModal open={state.flow === FlowStep.Timer} onClose={handleTimerClose}>
+                  <TopModal 
+                    open={(state.flow === FlowStep.Timer && !state.timerOnMenu)} 
+                    onClose={handleTimerClose}>
                     <TimerDisplay
                       name={selectedItem?.name ?? "none"}
                       active={state.timerActive}
                       secondsPass={secondsPass}
                       onStartClick={handleTimerStart}
-                      onStopClick={handleTimerStop}     // parent will “save current value and stop”
-                      onCloseClick={handleTimerClose} // same behavior as close
+                      onStopClick={handleTimerStop}     
+                      onCloseClick={handleTimerClose}
                       onResetClick={handleTimerReset}
                     />
                   </TopModal>
 
 
-                  <TopModal open={state.flow === FlowStep.Details} onClose={onHandleCancelHobbytime}>
+                  <TopModal 
+                    open={state.flow === FlowStep.Details} 
+                    onClose={onHandleCancelHobbytime}>
                     <FormAlert
                       title={t('hobbyWriteForm.whatIsDone')}
                       currentSpentTime={state.currentSpentTime}
@@ -417,6 +443,7 @@ const initialState: State = {
   selectedItemId: null,
   currentSpentTime: 0,
   timerActive: false,
+  timerOnMenu: false,
   server: { hobbies: [], hobbyTimes: [], hobbyTimeDetails: [] },
   menu: Menu.main,
   topMenu: null,
