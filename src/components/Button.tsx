@@ -2,7 +2,8 @@
 
 export enum ButtonStyle {
     Primary = 0,
-    Second
+    Second,
+    Icon
 }
 
 interface Props {
@@ -10,7 +11,8 @@ interface Props {
     style?: ButtonStyle,
     onClick?: () => void,
     buttonType?: 'button' | 'submit' | 'reset'
-    enabled?: boolean
+    enabled?: boolean,
+    icon?: React.FC<{ size?: number; color?: string}>;
 }
 
 export default function Button({ 
@@ -18,12 +20,16 @@ export default function Button({
     style: type = ButtonStyle.Primary, 
     onClick,
     buttonType = 'button',
-    enabled = true
+    enabled = true,
+    icon: Icon,
  }: Props) {
 
     const className =
-    type === ButtonStyle.Primary ? 'btn btnPrimary' :
-    'btn btnSecondary';
+        type === ButtonStyle.Primary
+        ? "btn btnPrimary"
+        : type === ButtonStyle.Icon
+            ? "btn btnIconOnly"
+            : "btn btnSecondary";
 
     return (
            <button
@@ -32,7 +38,11 @@ export default function Button({
                 type={buttonType}
                 disabled={!enabled}
             >
-                {title}
+                { Icon ? (
+                    <Icon />
+                ) : (
+                    title
+                )}
             </button>   
 
     );

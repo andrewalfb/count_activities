@@ -14,9 +14,9 @@
         "descriptionPlaceholder": "description du loisir"
     },
     "app": {
-        "en": "English",
-        "fr": "Français",
-        "hy": "Հայերեն",
+        "en": "En",
+        "fr": "Fr",
+        "hy": "Հա",
         "showMenu": "Afficher le menu",
         "whatWillDo": "Que faire :",
         "start": "Démarrer",
