@@ -377,7 +377,15 @@ async deleteHobby(id: number) {
   async getHobbyTimeList(): Promise<HobbyTime[]> {
     const db = await this.getDb();
     const userId = await this.getAnonId();
-    const stmt = db.prepare('SELECT * FROM hobbies, hobby_time WHERE hobbies.userId = ? AND hobbies.id = hobby_time.hobbyId');
+    const stmt = db.prepare(`
+      SELECT 
+      * 
+      FROM hobbies h, hobby_time ht 
+      WHERE h.userId = ? 
+        AND h.id = ht.hobbyId
+        AND ht.timestamp >= CAST(strftime('%s','now','start of day') AS INTEGER)
+        AND ht.timestamp <  CAST(strftime('%s','now','start of day','+1 day') AS INTEGER)
+    `);
     stmt.bind([userId]);
 
     const rows: HobbyTime[] = [];
