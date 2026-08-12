@@ -73,7 +73,7 @@ export function reducer(state: State, action: Action): State {
     case 'TIMER_DISPLAY_CLOSE':
       return { ...state, flow: FlowStep.Idle, timerOnMenu: true }
     case 'TIMER_CANCEL':
-      return { ...state, flow: FlowStep.Idle, timerActive: false}
+      return { ...state, flow: FlowStep.Idle, timerActive: false, currentSpentTime: 0 }
     case 'TIMER_RESET':
       return { ...state, timerActive: false, flow: FlowStep.Timer}
     case 'SAVE_START':

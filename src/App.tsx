@@ -132,6 +132,8 @@ useEffect(() => {
 
   // Timer--Start
   function onHandleCancelHobbytime() {
+    startStampRef.current = null;
+    elapsedBeforeRef.current = 0;
     dispatch({ type: 'TIMER_CANCEL' });
   };
 
@@ -377,18 +379,6 @@ const timerLabel = formatTime(secondsPass); // reuse your existing formatTime
                       onResetClick={handleTimerReset}
                     />
                   </TopModal>
-
-
-                  <TopModal 
-                    open={state.flow === FlowStep.Details} 
-                    onClose={onHandleCancelHobbytime}>
-                    <FormAlert
-                      title={t('hobbyWriteForm.whatIsDone')}
-                      currentSpentTime={state.currentSpentTime}
-                      onSave={onSaveHobbyTime}
-                      onCancel={onHandleCancelHobbytime}
-                    />
-                  </TopModal>
                 </div>
               )}
 
@@ -421,6 +411,21 @@ const timerLabel = formatTime(secondsPass); // reuse your existing formatTime
                   </div>
                 )}
               </div>
+
+
+
+                  <TopModal 
+                    open={state.flow === FlowStep.Details} 
+                    onClose={onHandleCancelHobbytime}>
+                    <FormAlert
+                      title={t('hobbyWriteForm.whatIsDone')}
+                      currentSpentTime={state.currentSpentTime}
+                      onSave={onSaveHobbyTime}
+                      onCancel={onHandleCancelHobbytime}
+                    />
+                  </TopModal>
+
+
             </div>
           </div>
         </main>

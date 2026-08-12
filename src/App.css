@@ -189,6 +189,33 @@ nav {
   margin-left: clamp(12px, 4vw, 4px);
 }
 
+/* for mobile redesign Timer */
+
+@media (max-width: 480px) {
+  .modalCard{
+    max-width: fit-content;
+    padding: 12px;
+  }
+
+  /* .columnContent{
+    max-width: 420px;
+    gap: 10px;
+  } */
+
+  .timeDisplay{
+    font-size: var(--font-size-4xl);
+  }
+
+  .btn-wrap{
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* .btn-wrap > *{
+    width: 100%;
+  } */
+}
+
 /* DataTable */
 
 .dataTable {
