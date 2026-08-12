@@ -114,14 +114,6 @@ useEffect(() => {
   }, []);
 
   function handleMenu(menu: Menu) {
-    switch (menu) {
-      case Menu.statistics:
-        //  handleShowDetails();
-        break;
-      default:
-        break;
-    };
-
     dispatch({ type: 'SET_MENU', menu: menu });
   };
 
@@ -300,7 +292,7 @@ function handleTimerClose() {
     i18n.changeLanguage(language?.lang);
   }
 
-const timerLabel = formatTime(secondsPass); // reuse your existing formatTime
+const timerLabel = formatTime(secondsPass); 
 
   return (
     <>

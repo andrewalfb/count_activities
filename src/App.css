@@ -11,11 +11,12 @@
 
   --radius: 14px;
 
-  --font-size-middle: 1.25rem;
-
-  /* Optional: make sizes consistent */
   --btn-h: 44px;
-  --btn-x: 44px;
+
+  --padding-tb: 8px;
+  --padding-lr: 14px; 
+
+  --gap-h: 12px;
 
   /* Transitions for a nicer feel */
   --ease: 180ms cubic-bezier(.2,.8,.2,1);
@@ -32,6 +33,31 @@
   --font-size-5xl: 2.75rem; /* 44px */  
 }
 
+
+@media (max-width: 768px) {
+  :root {
+    --font-size-small: 0.65rem;   /* ~10.4px */
+    --font-size-base: 0.875rem;  /* 14px */
+    --font-size-middle: 1.05rem; /* ~16.8px */
+    --font-size-large: 1.3rem;    /* ~20.8px */
+    --font-size-xl: 1.4rem;      /* ~22.4px */
+    --font-size-xxl: 1.65rem;    /* ~26.4px */
+    --font-size-3xl: 1.55rem;    /* ~31.2px 1.95rem*/
+    --font-size-4xl: 2.15rem;    /* ~34.4px */
+    --font-size-5xl: 2.35rem;    /* ~37.6px */
+
+    --radius: 10px;
+
+    --btn-h: 30px;
+
+    --padding-tb: 2px;
+    --padding-lr: 8px; 
+
+    --gap-h: 4px;
+  }
+}
+
+
 #root {
   display: block;
   gap: 10px;
@@ -47,7 +73,7 @@
 
 .sidebarSlot {
   flex: 0.2;
-  padding:0px 16px;        
+  padding: 0px 16px;        
 }
 
 .contentSidebar {
@@ -61,7 +87,6 @@
 .contentMainArea{
   flex:0.7;
   width: fit-content;
-       
 }
 
 .contentCard{
@@ -71,7 +96,6 @@
   background:#fff;
   padding:16px;
 }
-
 
 nav {
   padding: 10px;
@@ -153,7 +177,6 @@ nav {
 }
 
 
-
 /* Timer */
 
 .columnContent {
@@ -191,16 +214,11 @@ nav {
 
 /* for mobile redesign Timer */
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .modalCard{
     max-width: fit-content;
     padding: 12px;
   }
-
-  /* .columnContent{
-    max-width: 420px;
-    gap: 10px;
-  } */
 
   .timeDisplay{
     font-size: var(--font-size-4xl);
@@ -210,10 +228,6 @@ nav {
     flex-direction: column;
     gap: 10px;
   }
-
-  /* .btn-wrap > *{
-    width: 100%;
-  } */
 }
 
 /* DataTable */
@@ -322,9 +336,9 @@ nav {
 }
 
 /* if your form is inside a flex container and you want breathing room */
-.hobbyForm__actions .btn {
+/* .hobbyForm__actions .btn {
   height: 44px;
-}
+} */
 
 
 /* form adding details to hobby activities */
@@ -432,6 +446,25 @@ nav {
   color: var(--color-inactive);
 }
 
+/* adaptive menu ext */
+@media (max-width: 768px) {
+  .sidebarSlot {
+    flex: 0.1;
+    padding: 0px 4px;
+  }
+
+  .menuItem {
+    padding: 0 12px; 
+    justify-content: center; 
+    gap: 0;
+  }
+
+  .menuItemContent label {
+    display: none;
+  }
+}
+
+
 /* top menu */
 .topMenu{
   display:flex;
@@ -512,9 +545,9 @@ nav {
 
 
 /* buttons */
-.btn{
+.btn {
   height: var(--btn-h);
-  padding: 0 var(--btn-x);
+  padding: var(--padding-tb) var(--padding-lr);
   border-radius: var(--radius);
   border: 1px solid var(--color-border);
 
@@ -522,13 +555,13 @@ nav {
   font-size: var(--font-size-middle);
   letter-spacing: .01em;
 
-  background:#fff;
-  color:#111827;
+  background: #fff;
+  color: #111827;
 
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   transition: transform var(--ease), background-color var(--ease),
               border-color var(--ease), box-shadow var(--ease),
@@ -568,24 +601,24 @@ nav {
 }
 
 /* Secondary */
-.btnSecondary{
+.btnSecondary {
   background:#fff;
   color:#374151;
   border-color:#d1d5db;
 }
-.btnSecondary:hover:not(:disabled){
+.btnSecondary:hover:not(:disabled) {
   background:#f9fafb;
   border-color:#cbd5e1;
   box-shadow: 0 10px 20px rgba(17, 24, 39, 0.06);
   transform: translateY(-1px);
 }
-.btnSecondary:active:not(:disabled){
+.btnSecondary:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: 0 8px 16px rgba(17, 24, 39, 0.06);
 }
 /* small buttons / icon variants */
-.btnIconOnly{
-  padding: 0;             /* remove text padding */
+.btnIconOnly {
+  padding: 0;     
   border: none;
   display: inline-flex;
   align-items: center;
@@ -593,18 +626,18 @@ nav {
   color: var(--color-active);
 }
 
-.btnIconOnly svg{
+.btnIconOnly svg {
   display: block;
 }
 
 
 /* mini Timer top Menu */
 .miniTimer{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:10px 14px;
-  border-radius:14px;
+  display: flex;
+  align-items: center;
+  gap: var(--gap-h);
+  padding: var(--padding-tb) var(--padding-lr);
+  border-radius: 14px;
   background: #fff;
   border: 1px solid var(--color-active);
 }
@@ -616,8 +649,4 @@ nav {
   color: var(--color-active);
   min-width: 78px; 
   text-align: left;
-}
-
-.miniTimer .miniTimerBtn {
-  margin: 0;
 }

@@ -20,8 +20,7 @@ export function MenuItem({
       {active && <div className="menuItemActiveBar" />}
 
       <div className="menuItemContent">
-        {/* Icon should use currentColor internally */}
-        <Icon size={20} />
+        <Icon size={24} />
         <label>{label}</label>
       </div>
     </div>
