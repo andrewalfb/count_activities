@@ -262,9 +262,9 @@ function handleTimerClose() {
     }
   }
 
-  async function handleShowRange(hobbyId: number, startDate: Date, endDate: Date) {
+  async function handleShowRange(startDate: Date, endDate: Date) {
     try {
-      let newHobbyRangeReport = await dbManager.getSpentTimeRange(startDate, endDate, hobbyId);
+      let newHobbyRangeReport = await dbManager.getSpentTimeRange(startDate, endDate);
       if (newHobbyRangeReport.length == 0) {
         return false;
       }
@@ -308,7 +308,57 @@ function handleTimerClose() {
     i18n.changeLanguage(language?.lang);
   }
 
-const timerLabel = formatTime(secondsPass); 
+  const timerLabel = formatTime(secondsPass); 
+
+
+  function ImportBackupButton() {
+    async function handleChange(
+      event: React.ChangeEvent<HTMLInputElement>
+    ) {
+      const file = event.target.files?.[0];
+
+      if (!file) {
+        return;
+      }
+
+      try {
+        await dbManager.restoreBackup(file);
+
+        // Notify the rest of the app that the database changed
+        window.location.reload();
+      } catch (error) {
+        console.error("Database restore failed:", error);
+        alert("The database backup could not be restored.");
+      }
+    }
+
+    return (
+      <input
+        type="file"
+        accept=".sqlite,.db"
+        onChange={handleChange}
+      />
+    );
+  }
+
+  function ExportBackupButton() {
+    async function handleExport() {
+      try {
+        await dbManager.downloadBackup();
+      } catch (error) {
+        console.error("Database export failed:", error);
+        alert("The database backup could not be exported.");
+      }
+    }
+
+    return (
+      <button type="button" onClick={handleExport}>
+        Export database
+      </button>
+    );
+}
+
+
 
   return (
     <>
@@ -354,6 +404,10 @@ const timerLabel = formatTime(secondsPass);
                   }
                 </div>
               }
+              
+              <ImportBackupButton />
+              <ExportBackupButton />
+            
 
               <Select
                 items={languages.map((language) => ({ id: language.id, name: language.name }))}

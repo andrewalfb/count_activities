@@ -22,7 +22,7 @@ interface Props {
     onHobbyDetails: (hobbyId: number) => Promise<boolean>,
     hobbyTimes: HobbyTime[],
     onHobbyTimes: () => Promise<boolean>;
-    onHobbyTimesRange: (hobbyId: number, startDate: Date, endDate: Date) => Promise<boolean>;
+    onHobbyTimesRange: (startDate: Date, endDate: Date) => Promise<boolean>;
 }
 
 export function StatisticsPage({
@@ -83,10 +83,9 @@ export function StatisticsPage({
 
     const handleRangeActivitiesReport = useCallback( async (startDate: Date, endDate: Date) => {
         setIsRangeReportStart(false);
-        if (!selectedHobby) return;
         setIsWaiting(true);
         try {
-            const ok = await onHobbyTimesRange(selectedHobby.id, startDate, endDate);
+            const ok = await onHobbyTimesRange(startDate, endDate);
             if (ok) setIsShowRangeActivities(true);
         } finally {
             setIsWaiting(false);
@@ -122,7 +121,7 @@ export function StatisticsPage({
                 id: 'rangeReport',
                 getTitle: () => tRef.current('statistics.timeRangeReport'),
                 style: ButtonStyle.Primary,
-                active: false,
+                active: true,
                 onClick: () => rangeActivitiesReportStartRef.current(),
             }
         ])

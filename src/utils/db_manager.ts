@@ -336,40 +336,40 @@ async deleteHobby(id: number) {
   */
 
   async updateHobby(id: number, name: string, description: string) {
-  const db = await this.getDb();
+    const db = await this.getDb();
 
-  const sql = `
-    UPDATE hobbies
-      SET name = ?,
-          description = ?
-    WHERE id = ?
-  `;
+    const sql = `
+      UPDATE hobbies
+        SET name = ?,
+            description = ?
+      WHERE id = ?
+    `;
 
-  const params = [name, description, id];
+    const params = [name, description, id];
 
-  const stmt = db.prepare(sql);
+    const stmt = db.prepare(sql);
 
-  // 1) Execute normally (the safe/bound way)
-  stmt.bind(params);
+    // 1) Execute normally (the safe/bound way)
+    stmt.bind(params);
 
-  // Depending on how your other code works, choose ONE:
-  // Option A (common in sql.js patterns for SELECT): stmt.step()
-  // Option B (often used for non-SELECT): stmt.run()
-  //
-  // If you already have working UPDATE code elsewhere, follow that.
-  if (typeof stmt.run === "function") {
-    stmt.run(params); // if your version supports run with params
-  } else {
-    // For bind + step style:
-    while (stmt.step()) { /* no rows expected for UPDATE */ }
-  }
+    // Depending on how your other code works, choose ONE:
+    // Option A (common in sql.js patterns for SELECT): stmt.step()
+    // Option B (often used for non-SELECT): stmt.run()
+    //
+    // If you already have working UPDATE code elsewhere, follow that.
+    if (typeof stmt.run === "function") {
+      stmt.run(params); // if your version supports run with params
+    } else {
+      // For bind + step style:
+      while (stmt.step()) { /* no rows expected for UPDATE */ }
+    }
 
-  // 2) Journal full SQL with substituted values
-  const journalSql = this.interpolateSql(sql, params);
-  console.info("JOURNAL:", journalSql);
+    // 2) Journal full SQL with substituted values
+    const journalSql = this.interpolateSql(sql, params);
+    console.info("JOURNAL:", journalSql);
 
-  stmt.free();
-  await this.saveToIndexedDB();
+    stmt.free();
+    await this.saveToIndexedDB();
 }
 
   // statistics functions
@@ -424,8 +424,7 @@ async deleteHobby(id: number) {
 
   async getSpentTimeRange(
     startDate: Date,
-    endDate: Date,
-    hobbyId: number
+    endDate: Date
   ): Promise<HobbyTimeDetail[]> {
     const db = await this.getDb();
     const start = Math.floor(startDate.getTime() / 1000);
@@ -438,8 +437,7 @@ async deleteHobby(id: number) {
         h.description AS description
       FROM hobbies h
       JOIN hobby_time ht ON h.id = ht.hobbyId
-      WHERE ht.hobbyId = ?
-        AND ht.timestamp >= ?
+      WHERE ht.timestamp >= ?
         AND ht.timestamp < ?
       GROUP BY h.id, h.name, h.description
     `);
@@ -447,7 +445,7 @@ async deleteHobby(id: number) {
     const rows: HobbyTimeDetail[] = [];
 
     try {
-      stmt.bind([hobbyId, start, end]);
+      stmt.bind([start, end]);
 
       while (stmt.step()) {
         const obj = stmt.getAsObject();
@@ -467,4 +465,58 @@ async deleteHobby(id: number) {
     return rows;
   }
 
+
+  // import export db
+   async downloadBackup(): Promise<void> {
+    const db = await this.getDb();
+    const bytes = db.export();
+
+    const buffer = new ArrayBuffer(bytes.byteLength);
+    new Uint8Array(buffer).set(bytes);
+
+    const blob = new Blob([buffer], {
+      type: "application/x-sqlite3",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = `my-app-backup-${new Date()
+      .toISOString()
+      .slice(0, 10)}.sqlite`;
+
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 1000);
+  }
+  
+   async restoreBackup(file: File): Promise<void> {
+    if (!file) {
+      throw new Error("No backup file selected.");
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+
+    const SQL = await initSqlJs({
+      locateFile: () => "/sql-wasm.wasm",
+    });
+
+    const restoredDb = new SQL.Database(bytes);
+
+    // Replace the in-memory database
+    if (this.db) {
+      this.db.close();
+    }
+
+    this.db = restoredDb;
+
+    // Persist the restored database in IndexedDB
+    await this.saveToIndexedDB();
+  }
 }
