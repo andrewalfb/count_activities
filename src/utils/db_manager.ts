@@ -397,6 +397,7 @@ async deleteHobby(id: number) {
     return rows;
   };
 
+
   async getDetailsSpentTimes(hobbyId: number) {
     const db = await this.getDb();
     const stmt = db.prepare(`
@@ -420,4 +421,50 @@ async deleteHobby(id: number) {
       stmt.free;
     return rows;
   }
+
+  async getSpentTimeRange(
+    startDate: Date,
+    endDate: Date,
+    hobbyId: number
+  ): Promise<HobbyTimeDetail[]> {
+    const db = await this.getDb();
+    const start = Math.floor(startDate.getTime() / 1000);
+    const end = Math.floor(endDate.getTime() / 1000);
+
+    const stmt = db.prepare(`
+      SELECT
+        SUM(ht.spentTime) AS spentTime,
+        h.name AS name,
+        h.description AS description
+      FROM hobbies h
+      JOIN hobby_time ht ON h.id = ht.hobbyId
+      WHERE ht.hobbyId = ?
+        AND ht.timestamp >= ?
+        AND ht.timestamp < ?
+      GROUP BY h.id, h.name, h.description
+    `);
+
+    const rows: HobbyTimeDetail[] = [];
+
+    try {
+      stmt.bind([hobbyId, start, end]);
+
+      while (stmt.step()) {
+        const obj = stmt.getAsObject();
+
+        rows.push(
+          new HobbyTimeDetail(
+            String(obj.name),
+            String(obj.description),
+            Number(obj.spentTime)
+          )
+        );
+      }
+    } finally {
+      stmt.free();
+    }
+
+    return rows;
+  }
+
 }

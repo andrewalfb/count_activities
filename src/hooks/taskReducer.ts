@@ -52,6 +52,7 @@ export type Action =
   | { type: 'ADD_HOBBY', hobby: Hobby}
   | { type: 'UPDATE_HOBBY', hobby: Hobby}
   | { type: 'LOAD_DETAILS', details: HobbyTimeDetail[] }
+  | { type: 'LOAD_RANGE_REPORT', details: HobbyTimeDetail[] }
   | { type: 'SET_MENU', menu: Menu }
   | { type: 'SET_LANGUAGE', language: string};
 
@@ -112,6 +113,8 @@ export function reducer(state: State, action: Action): State {
       return { ...state, menu: action.menu };
     case 'SET_LANGUAGE':
         return { ...state, language: action.language};
+    case 'LOAD_RANGE_REPORT':
+      return { ...state, server: { ...state.server, hobbyTimeDetails: action.details }}
     
     default: {
       throw Error('Unknown Action: ' + action + 'State: ' + state);

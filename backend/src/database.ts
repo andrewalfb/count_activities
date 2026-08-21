@@ -154,6 +154,27 @@ export function getSpentTimesToday(userId: string) {
   return rows;
 }
 
+export function getSpentTimeRange(start: number, end: number, userId: string) {
+  const stmt = db.prepare(`
+    SELECT
+      SUM(ht.spentTime) AS spentTime,
+      h.name AS name,
+      h.description AS description,
+      ht.timestamp AS timestamp
+    FROM hobbies h
+    JOIN hobby_time ht ON h.id = ht.hobbyId
+    WHERE h.userId = ?
+      AND ht.timestamp >= ?
+      AND ht.timestamp < ?
+    GROUP BY 
+      ht.timestamp
+  `);
+
+  const res = stmt.all(userId, start, end);
+
+  return res;
+}
+
 export function getDetailsSpentTimes(hobbyId: number) {
   const rows = db.prepare(`
       SELECT 

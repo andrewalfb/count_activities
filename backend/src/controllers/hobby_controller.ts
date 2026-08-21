@@ -2,6 +2,7 @@
 import { 
     getHobbiesList, 
     getSpentTimesToday, 
+    getSpentTimeRange,
     setHobby, 
     setHobbyTime, 
     getDetailsSpentTimes, 
@@ -25,6 +26,15 @@ export const hobbyTimes = function (req: Request, res: Response) {
     const rows = getSpentTimesToday(userId);
     res.json(rows);
 };
+
+export const hobbyTimesRange = function(req: Request, res: Response) {
+    const userId = req.cookies.anon_id;
+    const startDate = req.body.start;
+    const endDate = req.body.end;
+    const rows = getSpentTimeRange(userId, startDate, endDate);
+
+    return res.json(rows);
+}
 
 export const addHobbyTime = function (req: Request, res: Response) {  
     setHobbyTime(req.body.hobby_id, req.body.spent_time, req.body.description);

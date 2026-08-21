@@ -3,6 +3,7 @@ import {
     hobbyList, 
     addHobbyTime, 
     hobbyTimes, 
+    hobbyTimesRange,
     addHobby, 
     detailsSpentHobbyTimes, 
     deleteAllInformationHobby,
@@ -12,7 +13,10 @@ import {
 export const router = express.Router();
 
 router.get('/', hobbyList);
+
 router.get('/times', hobbyTimes);
+router.get('/times_range', hobbyTimesRange);
+
 router.post('/add_time', addHobbyTime);
 router.post('/add', addHobby);
 router.get('/details', detailsSpentHobbyTimes);

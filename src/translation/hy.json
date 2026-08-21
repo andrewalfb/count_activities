@@ -39,6 +39,7 @@
     "statistics": {
         "selectHobby": "Ընտրել հոբի:",
         "timeReport": "Ժամանակի հաշվետվություն",
+        "timeRangeReport": "Time report for period",
         "todayActivities": "Այսօրվա գործողություններ",
         "detailsReport": "Մանրամասների հաշվետվություն՝ {{name}}",
         "todayActivitiesReport": "Այսօրվա գործողությունների հաշվետվություն",

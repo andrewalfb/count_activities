@@ -262,6 +262,22 @@ function handleTimerClose() {
     }
   }
 
+  async function handleShowRange(hobbyId: number, startDate: Date, endDate: Date) {
+    try {
+      let newHobbyRangeReport = await dbManager.getSpentTimeRange(startDate, endDate, hobbyId);
+      if (newHobbyRangeReport.length == 0) {
+        return false;
+      }
+      dispatch({ type: 'LOAD_RANGE_REPORT', details: newHobbyRangeReport});
+
+      return true
+    } catch (error) {
+      console.error(`error getting range details report: ${error}`);
+
+      return false
+    }
+  }
+
 
   async function handleUpdateHobby(updated: Hobby): Promise<boolean> {
 
@@ -397,27 +413,23 @@ const timerLabel = formatTime(secondsPass);
                       dispatch={dispatch}
                       hobbyDetailsTime={state.server.hobbyTimeDetails}
                       onHobbyDetails={handleShowDetails}
+                      onHobbyTimesRange={handleShowRange}
                       hobbyTimes={state.server.hobbyTimes}
                       onHobbyTimes={getSpentTimesToday}
                     />
                   </div>
                 )}
               </div>
-
-
-
-                  <TopModal 
-                    open={state.flow === FlowStep.Details} 
-                    onClose={onHandleCancelHobbytime}>
-                    <FormAlert
-                      title={t('hobbyWriteForm.whatIsDone')}
-                      currentSpentTime={state.currentSpentTime}
-                      onSave={onSaveHobbyTime}
-                      onCancel={onHandleCancelHobbytime}
-                    />
-                  </TopModal>
-
-
+                <TopModal 
+                  open={state.flow === FlowStep.Details} 
+                  onClose={onHandleCancelHobbytime}>
+                  <FormAlert
+                    title={t('hobbyWriteForm.whatIsDone')}
+                    currentSpentTime={state.currentSpentTime}
+                    onSave={onSaveHobbyTime}
+                    onCancel={onHandleCancelHobbytime}
+                  />
+                </TopModal>
             </div>
           </div>
         </main>

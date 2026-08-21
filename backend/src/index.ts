@@ -53,6 +53,12 @@ app.use(function simpleLogger(req, res, next) {
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/hobby', hobbyRouter);
 
-app.listen(5001, () => {
-  console.log('Server started on port 5001');
+// app.listen(5001, () => {
+//   console.log('Server started on port 5001');
+// });
+
+
+const port = process.env.PORT || 5001;
+app.listen(port, () => {
+  console.log(`Server started on port ${port}`);
 });

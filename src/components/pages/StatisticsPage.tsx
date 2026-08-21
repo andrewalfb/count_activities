@@ -12,6 +12,7 @@ import { Spinner } from "../Spinner";
 // import { sleep } from "../../utils/helpers";    
 import { Menu, TopMenu } from "../../models/menu";
 import { Action, State } from "../../hooks/taskReducer";
+import DateRangeForm from "../DateRangeForm";
 
 interface Props {
     selectedHobbyId: number | null,
@@ -21,6 +22,7 @@ interface Props {
     onHobbyDetails: (hobbyId: number) => Promise<boolean>,
     hobbyTimes: HobbyTime[],
     onHobbyTimes: () => Promise<boolean>;
+    onHobbyTimesRange: (hobbyId: number, startDate: Date, endDate: Date) => Promise<boolean>;
 }
 
 export function StatisticsPage({
@@ -31,12 +33,20 @@ export function StatisticsPage({
     onHobbyDetails,
     hobbyTimes,
     onHobbyTimes,
+    onHobbyTimesRange,
 }: Props) {
     const [t] = useTranslation();
     const [isWaiting, setIsWaiting] = useState(false);
     
     const [isShowDetailsReport, setIsShowDetailsReport] = useState(false);
     const [isShowTodayActivities, setIsShowTodayActivities] = useState(false);
+    const [isShowRangeActivities, setIsShowRangeActivities] = useState(false);
+    const [isRangeReportStart, setIsRangeReportStart] = useState(false);
+
+
+    const [startInput, setStartInput] = useState("");
+    const [endInput, setEndInput] = useState("");
+
 
     const selectedHobby = useMemo(
         () => state.server.hobbies.find(h => h.id === selectedHobbyId) ?? null,
@@ -66,41 +76,65 @@ export function StatisticsPage({
         }        
     }, [setIsWaiting, onHobbyTimes, setIsShowTodayActivities ])
 
-const detailsReportRef = useRef(handleDetailsReport);
-const todayActivitiesReportRef = useRef(handleTodayActivitiesReport);
-const tRef = useRef(t);
-
-detailsReportRef.current = handleDetailsReport;
-todayActivitiesReportRef.current = handleTodayActivitiesReport;
-
-const [topMenu] = useState(() =>
-    new TopMenu(Menu.edit, [
-        {
-            id: 'detailsReport',
-            getTitle: () => tRef.current('statistics.timeReport'),
-            style: ButtonStyle.Primary,
-            active: false,
-            onClick: () => detailsReportRef.current(),
-        },
-        {
-            id: 'todayReport',
-            getTitle: () => tRef.current('statistics.todayActivities'),
-            style: ButtonStyle.Primary,
-            active: true,
-            onClick: () => todayActivitiesReportRef.current(),
-        },
-    ])
-);
-
-useEffect(() => {
-    tRef.current = t;
-}, [t]);
-
-useEffect(() => {
-    dispatch({ type: 'TOP_MENU_INSTALL', topMenu });
-}, [dispatch, topMenu]);
+    const handleRangeActivitiesReportStart = useCallback( async () => {
+        setIsRangeReportStart(true);
+    }, [setIsWaiting, onHobbyTimesRange, setIsShowRangeActivities]);
 
 
+    const handleRangeActivitiesReport = useCallback( async (startDate: Date, endDate: Date) => {
+        setIsRangeReportStart(false);
+        if (!selectedHobby) return;
+        setIsWaiting(true);
+        try {
+            const ok = await onHobbyTimesRange(selectedHobby.id, startDate, endDate);
+            if (ok) setIsShowRangeActivities(true);
+        } finally {
+            setIsWaiting(false);
+            setIsShowRangeActivities(true);
+        }
+    }, [setIsWaiting, onHobbyTimesRange, setIsShowRangeActivities]);
+
+    const detailsReportRef = useRef(handleDetailsReport);
+    const todayActivitiesReportRef = useRef(handleTodayActivitiesReport);
+    const rangeActivitiesReportStartRef = useRef(handleRangeActivitiesReportStart);
+    const tRef = useRef(t);
+
+    detailsReportRef.current = handleDetailsReport;
+    todayActivitiesReportRef.current = handleTodayActivitiesReport;
+
+    const [topMenu] = useState(() =>
+        new TopMenu(Menu.edit, [
+            {
+                id: 'detailsReport',
+                getTitle: () => tRef.current('statistics.timeReport'),
+                style: ButtonStyle.Primary,
+                active: false,
+                onClick: () => detailsReportRef.current(),
+            },
+            {
+                id: 'todayReport',
+                getTitle: () => tRef.current('statistics.todayActivities'),
+                style: ButtonStyle.Primary,
+                active: true,
+                onClick: () => todayActivitiesReportRef.current(),
+            },
+            {
+                id: 'rangeReport',
+                getTitle: () => tRef.current('statistics.timeRangeReport'),
+                style: ButtonStyle.Primary,
+                active: false,
+                onClick: () => rangeActivitiesReportStartRef.current(),
+            }
+        ])
+    );
+
+    useEffect(() => {
+        tRef.current = t;
+    }, [t]);
+
+    useEffect(() => {
+        dispatch({ type: 'TOP_MENU_INSTALL', topMenu });
+    }, [dispatch, topMenu]);
 
     return (
     <div className="hobbyPage">
@@ -136,6 +170,25 @@ useEffect(() => {
             </>
         )}
 
+        { isShowRangeActivities && (
+            <>
+                <DataTable
+                    title={t('statistics.timeRangeReport', { name: selectedHobby?.name ?? ''})}
+                    items={hobbyDetailsTime}
+                    columns={[
+                        { header: t('statistics.hobby'), cell: (h) => h.hobby },
+                        { header: t('statistics.description'), cell: (h) => h.description },
+                        { header: t('statistics.spentTime'), cell: (h) => h.spentTime }
+                    ]}
+                />
+                <Button
+                    title={t('common.close')}
+                    style={ButtonStyle.Second}
+                    onClick={() => setIsShowRangeActivities(false)}
+                />
+            </>
+        )}
+
 
         { isShowTodayActivities && (
             <>
@@ -154,6 +207,17 @@ useEffect(() => {
                     onClick={() => setIsShowTodayActivities(false)}
                 />               
             </>
+        )}
+
+        { isRangeReportStart && (
+            <DateRangeForm
+                onSubmit={(startDate, endDate) => {
+                handleRangeActivitiesReport(startDate, endDate);
+            }}
+            onCancel={() => {
+                setIsRangeReportStart(false);
+            }}
+/>
         )}
         
     </div>
