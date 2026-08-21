@@ -63,5 +63,10 @@
     },
     "spinner": {
         "title": "..."
+    },
+    "database": {
+        "sync": "Sync DB",
+        "export": "Export DB",
+        "import": "Import DB"
     }
 }

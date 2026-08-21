@@ -44,6 +44,13 @@ export default function Sidebar({onSelect}: Props) {
             active={isActive === Menu.statistics}        
             onClick={() => {handleSelect(Menu.statistics)}}
           />
+
+          <MenuItem
+            icon={StatisticsIcon}
+            label={t('database.sync')}
+            active={isActive === Menu.syncDb}
+            onClick={() => {handleSelect(Menu.syncDb)}}
+          />
         </div>
     </nav>
   );

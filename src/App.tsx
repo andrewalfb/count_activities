@@ -26,6 +26,7 @@ import { dbManager } from './utils/db';
 import TimerDisplay from './components/TimerDisplay';
 import { formatTime } from './utils/helpers';
 import { pauseIcon, startIcon, stopIcon } from './components/Icons';
+import { SyncDbPage } from './components/pages/SyncDbPage';
 
 
 function App() {
@@ -311,55 +312,6 @@ function handleTimerClose() {
   const timerLabel = formatTime(secondsPass); 
 
 
-  function ImportBackupButton() {
-    async function handleChange(
-      event: React.ChangeEvent<HTMLInputElement>
-    ) {
-      const file = event.target.files?.[0];
-
-      if (!file) {
-        return;
-      }
-
-      try {
-        await dbManager.restoreBackup(file);
-
-        // Notify the rest of the app that the database changed
-        window.location.reload();
-      } catch (error) {
-        console.error("Database restore failed:", error);
-        alert("The database backup could not be restored.");
-      }
-    }
-
-    return (
-      <input
-        type="file"
-        accept=".sqlite,.db"
-        onChange={handleChange}
-      />
-    );
-  }
-
-  function ExportBackupButton() {
-    async function handleExport() {
-      try {
-        await dbManager.downloadBackup();
-      } catch (error) {
-        console.error("Database export failed:", error);
-        alert("The database backup could not be exported.");
-      }
-    }
-
-    return (
-      <button type="button" onClick={handleExport}>
-        Export database
-      </button>
-    );
-}
-
-
-
   return (
     <>
       <div className='appLayout'>
@@ -404,11 +356,7 @@ function handleTimerClose() {
                   }
                 </div>
               }
-              
-              <ImportBackupButton />
-              <ExportBackupButton />
             
-
               <Select
                 items={languages.map((language) => ({ id: language.id, name: language.name }))}
                 active={languages[0].id}
@@ -474,16 +422,28 @@ function handleTimerClose() {
                   </div>
                 )}
               </div>
-                <TopModal 
-                  open={state.flow === FlowStep.Details} 
-                  onClose={onHandleCancelHobbytime}>
-                  <FormAlert
-                    title={t('hobbyWriteForm.whatIsDone')}
-                    currentSpentTime={state.currentSpentTime}
-                    onSave={onSaveHobbyTime}
-                    onCancel={onHandleCancelHobbytime}
-                  />
-                </TopModal>
+              <div>
+                {state.menu === Menu.syncDb && (
+                  <div className='menuPage'>
+                    <SyncDbPage
+                      state={state}
+                      dispatch={dispatch}
+                    />
+                  </div>
+                )}
+              </div>
+
+
+              <TopModal 
+                open={state.flow === FlowStep.Details} 
+                onClose={onHandleCancelHobbytime}>
+                <FormAlert
+                  title={t('hobbyWriteForm.whatIsDone')}
+                  currentSpentTime={state.currentSpentTime}
+                  onSave={onSaveHobbyTime}
+                  onCancel={onHandleCancelHobbytime}
+                />
+              </TopModal>
             </div>
           </div>
         </main>
