@@ -509,6 +509,20 @@ async deleteHobby(id: number) {
 
     const restoredDb = new SQL.Database(bytes);
 
+    // rewrite annon userID from restore db
+    const stmt = restoredDb.prepare(`
+      SELECT * FROM users LIMIT 1
+    `);
+
+    let restoreUserId = "";
+    
+    while (stmt.step()) {
+      const obj = stmt.getAsObject();
+      restoreUserId = String(obj.id);
+    }
+    
+    this.setAnonIdInIdb(restoreUserId);
+
     // Replace the in-memory database
     if (this.db) {
       this.db.close();

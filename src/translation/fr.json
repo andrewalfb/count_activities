@@ -65,8 +65,17 @@
         "title": "..."
     },
     "database": {
-        "sync": "Sync DB",
-        "export": "Export DB",
-        "import": "Import DB"
+        "sync": "Synchroniser la base de données",
+        "syncInfo": "Importez une base de données existante ou exportez vos données actuelles.",
+        "export": "Exporter la base de données",
+        "exportTitle": "Exporter la base de données",
+        "downloadDbInfo": "Téléchargez une sauvegarde de votre base de données actuelle.",
+        "import": "Importer la base de données",
+        "selectFileInfo": "Sélectionnez un fichier de base de données sur votre ordinateur.",
+        "inputTitle": "Choisir un fichier",
+        "noFileChosenAlert": "Aucun fichier sélectionné",
+        "exportBackupError": "La sauvegarde de la base de données n’a pas pu être exportée.",
+        "importTitle": "Importer la base de données",
+        "exportBackupSucceful": "La sauvegarde de la base de données a été exportée avec succès."
     }
 }

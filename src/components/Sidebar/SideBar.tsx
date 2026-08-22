@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { HobbyIcon, StatisticsIcon, TimerIcon } from '../Icons'
+import { databaseIcon, HobbyIcon, StatisticsIcon, TimerIcon } from '../Icons'
 
 import { Menu } from '../../models/menu';
 import { MenuItem } from './MenuItem';
@@ -46,7 +46,7 @@ export default function Sidebar({onSelect}: Props) {
           />
 
           <MenuItem
-            icon={StatisticsIcon}
+            icon={databaseIcon}
             label={t('database.sync')}
             active={isActive === Menu.syncDb}
             onClick={() => {handleSelect(Menu.syncDb)}}

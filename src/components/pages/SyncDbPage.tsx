@@ -1,6 +1,7 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Action, State } from "../../hooks/taskReducer";
 import { dbManager } from "../../utils/db";
+import { useTranslation } from "react-i18next";
 
 
 interface Props {
@@ -12,6 +13,12 @@ export function SyncDbPage({
     state,
     dispatch,
 }: Props) {
+    const [t] = useTranslation();
+    const tRef = useRef(t);
+
+    useEffect(() => {
+      tRef.current = t;
+    })
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -22,7 +29,8 @@ export function SyncDbPage({
     const handleImport = async() => {
         if (!selectedFile) return;
         try {
-          await dbManager.restoreBackup(selectedFile)
+          await dbManager.restoreBackup(selectedFile);
+          alert(t('database.exportBackupSucceful'));
         } finally {
           console.log("Importing:", selectedFile.name);
         }
@@ -35,24 +43,24 @@ export function SyncDbPage({
           await dbManager.downloadBackup();
         } catch (error) {
           console.error("Database export failed:", error);
-          alert("The database backup could not be exported.");
+          alert(t('database.exportBackupError'));
         }
   };
   return (
     <main className="database-content">
       <section className="database-card">
-        <h2>Database</h2>
+        <h2>{t('database.sync')}</h2>
         <p className="description">
-          Import an existing database or export your current data.
+          {t('database.syncInfo')}
         </p>
 
         <div className="database-actions">
           <div className="action-box">
-            <h3>Import Database</h3>
-            <p>Select a database file from your computer.</p>
+            <h3>{t('database.importTitle')}</h3>
+            <p>{t('database.selectFileInfo')}</p>
 
             <label className="file-input">
-              <span>Choose File</span>
+              <span>{t('database.inputTitle')}</span>
               <input
                 type="file"
                 accept=".db,.sqlite,.sqlite3"
@@ -61,7 +69,7 @@ export function SyncDbPage({
             </label>
 
             <span className="file-name">
-              {selectedFile ? selectedFile.name : "No file chosen"}
+              {selectedFile ? selectedFile.name : t('database.noFileChosenAlert')}
             </span>
 
             <button
@@ -70,148 +78,24 @@ export function SyncDbPage({
               disabled={!selectedFile}
               onClick={handleImport}
             >
-              Import DB
+              {t('database.import')}
             </button>
           </div>
 
           <div className="action-box">
-            <h3>Export Database</h3>
-            <p>Download a backup of your current database.</p>
+            <h3>{t('database.exportTitle')}</h3>
+            <p>{t('database.downloadDbInfo')}</p>
 
             <button
               type="button"
               className="outline-button export-button"
               onClick={handleExport}
             >
-              Export DB
+              {t('database.export')}
             </button>
           </div>
         </div>
       </section>
-
-      <style>{`
-        .database-content {
-          width: 100%;
-          min-height: 240px;
-          padding: 24px;
-          box-sizing: border-box;
-          background: #ffffff;
-          color: #4b5563;
-          font-family: Arial, sans-serif;
-        }
-
-        .database-card {
-          max-width: 760px;
-          margin: 0 auto;
-          padding: 22px;
-          border: 1px solid #e5e7eb;
-          border-radius: 10px;
-          background: #fff;
-        }
-
-        h2 {
-          margin: 0;
-          color: #374151;
-          font-size: 18px;
-          font-weight: 600;
-        }
-
-        .description {
-          margin: 6px 0 20px;
-          color: #9ca3af;
-          font-size: 13px;
-        }
-
-        .database-actions {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-        }
-
-        .action-box {
-          min-height: 160px;
-          padding: 18px;
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          background: #fafafa;
-          box-sizing: border-box;
-        }
-
-        h3 {
-          margin: 0 0 8px;
-          color: #4b5563;
-          font-size: 14px;
-          font-weight: 600;
-        }
-
-        .action-box p {
-          margin: 0 0 16px;
-          color: #9ca3af;
-          font-size: 12px;
-        }
-
-        .file-input {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          height: 30px;
-          padding: 0 12px;
-          border: 1px solid #d1d5db;
-          border-radius: 5px;
-          background: #fff;
-          color: #6b7280;
-          font-size: 12px;
-          cursor: pointer;
-        }
-
-        .file-input input {
-          display: none;
-        }
-
-        .file-name {
-          display: block;
-          min-height: 16px;
-          margin: 8px 0 14px;
-          overflow: hidden;
-          color: #9ca3af;
-          font-size: 11px;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
-        .outline-button {
-          height: 32px;
-          padding: 0 18px;
-          border: 1px solid #ff9800;
-          border-radius: 7px;
-          background: #fffaf2;
-          color: #ed8b00;
-          font-size: 12px;
-          cursor: pointer;
-        }
-
-        .outline-button:hover {
-          background: #fff1d6;
-        }
-
-        .outline-button:disabled {
-          border-color: #d1d5db;
-          background: #f3f4f6;
-          color: #9ca3af;
-          cursor: not-allowed;
-        }
-
-        .export-button {
-          width: 100%;
-          margin-top: 25px;
-        }
-
-        @media (max-width: 600px) {
-          .database-actions {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
     </main>
   );
 };

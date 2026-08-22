@@ -67,7 +67,16 @@
     },
     "database": {
         "sync": "Sync DB",
+        "syncInfo": "Import an existing database or export your current data.",
         "export": "Export DB",
-        "import": "Import DB"
+        "exportTitle": "Export Database",
+        "downloadDbInfo": "Download a backup of your current database.",
+        "import": "Import DB",
+        "selectFileInfo": "Select a database file from your computer.",
+        "inputTitle":"Choose File",
+        "noFileChosenAlert": "No file chosen",
+        "exportBackupError": "The database backup could not be exported.",
+        "importTitle": "Import Database",
+        "exportBackupSucceful": "The database backup be exported."
     }
 }
