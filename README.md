@@ -11,7 +11,7 @@ npm start
 ```
 
 Backend:
-
+now Frontend work with inner DB
 ```bash
 cd backend
 node index.js
