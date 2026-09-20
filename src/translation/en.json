@@ -38,9 +38,9 @@
     },
     "statistics": {
         "selectHobby": "Select hobby:",
-        "timeReport": "Time report",
-        "timeRangeReport": "Time report for period",
-        "todayActivities": "Today activities",
+        "timeReport": "Details",
+        "timeRangeReport": "Period",
+        "todayActivities": "Today",
         "detailsReport": "Details report: {{name}}",
         "todayActivitiesReport": "Today activities report",
         "loading": "Loading...",

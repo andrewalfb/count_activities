@@ -177,7 +177,7 @@ export function StatisticsPage({
                     columns={[
                         { header: t('statistics.hobby'), cell: (h) => h.hobby },
                         { header: t('statistics.description'), cell: (h) => h.description },
-                        { header: t('statistics.spentTime'), cell: (h) => h.spentTime }
+                        { header: t('statistics.spentTime'), cell: (h) => formatTime(h.spentTime) }
                     ]}
                 />
                 <Button
