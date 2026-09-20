@@ -37,9 +37,9 @@
     },
     "statistics": {
         "selectHobby": "Sélectionner un loisir :",
-        "timeReport": "Rapport de temps",
-        "timeRangeReport": "Time report for period",
-        "todayActivities": "Activités du jour",
+        "timeReport": "Détails",
+        "timeRangeReport": "Période",
+        "todayActivities": "Aujourd’hui",
         "detailsReport": "Rapport détaillé : {{name}}",
         "todayActivitiesReport": "Rapport des activités du jour",
         "loading": "Chargement...",

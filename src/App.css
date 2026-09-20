@@ -23,29 +23,51 @@
 
   --font-family: Arial, sans-serif;
 
-  --font-size-small: 0.75rem; /* 12px */
-  --font-size-base: 1rem; /* 16px, base */
-  --font-size-middle: 1.25rem; /* 20px */
-  --font-size-large: 1.5rem; /* 24px */
-  --font-size-xl: 1.75rem; /* 28px */
-  --font-size-xxl: 2rem; /* 32px */
-  --font-size-3xl: 2.25rem; /* 36px */
-  --font-size-4xl: 2.5rem; /* 40 px */
-  --font-size-5xl: 2.75rem; /* 44px */  
+   /* 
+   pixels = root_font_size * rem_value 
+   0.625rem; 10px
+   0.75rem; 12px
+   0.875rem; 14px
+   1rem; 16px
+   1.25rem; 20px
+   1.5rem; 16px
+   1.75rem; 28px
+   2rem; 32px
+   2.25rem; 36px
+   2.5rem; 40px 
+   2.75rem; 44px 
+   */
+
+
+  --font-size-base: 1rem;
+  --font-size-middle: 1.25rem; 
+  --font-size-large: 2.5rem; 
+
 }
 
 
 @media (max-width: 768px) {
   :root {
-    --font-size-small: 0.65rem;   /* ~10.4px */
-    --font-size-base: 0.875rem;  /* 14px */
-    --font-size-middle: 1.05rem; /* ~16.8px */
-    --font-size-large: 1.3rem;    /* ~20.8px */
-    --font-size-xl: 1.4rem;      /* ~22.4px */
-    --font-size-xxl: 1.65rem;    /* ~26.4px */
-    --font-size-3xl: 1.55rem;    /* ~31.2px 1.95rem*/
-    --font-size-4xl: 2.15rem;    /* ~34.4px */
-    --font-size-5xl: 2.35rem;    /* ~37.6px */
+    --font-size-base: 0.875rem;
+    --font-size-middle: 1rem;
+    --font-size-large: 2rem;
+
+    --radius: 8px;
+
+    --btn-h: 30px;
+
+    --padding-tb: 2px;
+    --padding-lr: 8px; 
+
+    --gap-h: 4px;
+  }
+}
+
+@media (max-width: 568px) {
+  :root {
+    --font-size-base: 0.625rem;  
+    --font-size-middle: 0.75rem; 
+    --font-size-large: 1.75rem;
 
     --radius: 8px;
 
@@ -64,6 +86,7 @@
   gap: 10px;
   height: 100%;
   font-family: var(--font-family);
+  font-size: 16px;
 }
 
 
@@ -199,8 +222,7 @@ nav {
 
 .timeDisplay {
   display: flex;
-  /* font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; */
-  font-size: var(--font-size-5xl);
+  font-size: var(--font-size-large);
   font-weight: 700;
   letter-spacing: 0.5px;
   color: #0f172a;
@@ -222,9 +244,9 @@ nav {
     padding: 12px;
   }
 
-  .timeDisplay{
+  /* .timeDisplay{
     font-size: var(--font-size-4xl);
-  }
+  } */
 
   .btn-wrap{
     flex-direction: column;
@@ -243,7 +265,7 @@ nav {
 
 .dataTable__title {
   padding: 20px;
-  font-size: var(--font-size-3xl);  
+  font-size: var(--font-size-large);  
 }
 
 .dataTable__th,
@@ -646,7 +668,7 @@ nav {
 
 .miniTimerValue{
   font-variant-numeric: tabular-nums;
-  font-size: var(--font-size-3xl);
+  font-size: var(--font-size-large);
   font-weight: 800;
   color: var(--color-active);
   min-width: 78px; 
